@@ -31,7 +31,12 @@ window.iniciarJuegoCulebrita = function() {
     configurarControlesTeclado();
     configurarControlesTactiles(); // 🔥 Activamos el lector del celular
 
-    if (juegoIntervalo) clearInterval(juegoIntervalo);
+    // [AM] FIX: Limpiamos el intervalo anterior y lo nulleamos antes de crear uno nuevo
+    // Esto evita que queden dos buclePrincipal corriendo al mismo tiempo entre rondas
+    if (juegoIntervalo) {
+        clearInterval(juegoIntervalo);
+        juegoIntervalo = null;
+    }
     juegoIntervalo = setInterval(buclePrincipal, 120);
     
     dibujarTodo();
@@ -40,7 +45,7 @@ window.iniciarJuegoCulebrita = function() {
 function buclePrincipal() {
     moverCulebrita();
 
-    // [AM] FIX: verificarComida va ANTES de verificarColisiones para que
+    // verificarComida va ANTES de verificarColisiones para que
     // el pop ocurra primero y verificarColisiones vea la culebrita en su
     // estado real, sin el segmento extra de la cola vieja
     verificarComida();
@@ -75,19 +80,14 @@ function verificarComida() {
 
 function verificarColisiones() {
     const cabeza = culebrita[0];
-    if (!cabeza) {
-        console.log("MUERTE: cabeza undefined, culebrita.length=", culebrita.length);
-        return true;
-    }
+    if (!cabeza) return true;
 
     if (cabeza.x < 0 || cabeza.x >= TOTAL_BLOQUES || cabeza.y < 0 || cabeza.y >= TOTAL_BLOQUES) {
-        console.log(`MUERTE MURO: cabeza=(${cabeza.x},${cabeza.y}) TOTAL_BLOQUES=${TOTAL_BLOQUES}`);
         return true;
     }
 
     for (let i = 1; i < culebrita.length; i++) {
         if (cabeza.x === culebrita[i].x && cabeza.y === culebrita[i].y) {
-            console.log(`MUERTE CUERPO: cabeza=(${cabeza.x},${cabeza.y}) chocó segmento[${i}]=(${culebrita[i].x},${culebrita[i].y}) longitud=${culebrita.length}`);
             return true;
         }
     }
@@ -204,7 +204,8 @@ function dibujarTodo() {
 
 function terminarJuego() {
     clearInterval(juegoIntervalo);
-
+    juegoIntervalo = null; // [AM] FIX: nulleamos para que iniciarJuegoCulebrita
+                           // sepa que no hay intervalo activo en la próxima ronda
     juegoCorriendo = false;
     
     if (ctx && canvas) {
