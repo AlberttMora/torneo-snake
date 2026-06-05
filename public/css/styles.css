@@ -92,10 +92,10 @@ canvas {
     padding: 15px;
     border-radius: 8px;
     width: 220px;
-    height: 80vh; /* Altura controlada para no salir de pantalla */
+    max-height: 80vh; /* Límite para que no se salga de la pantalla */
     box-shadow: -5px 5px 15px rgba(0,0,0,0.3);
     
-    display: flex;        /* Flexbox para controlar el botón */
+    display: flex;        /* Activamos Flexbox */
     flex-direction: column;
 }
 
@@ -105,14 +105,14 @@ canvas {
     padding-bottom: 5px;
     color: #58a6ff;
     text-align: center;
-    flex-shrink: 0;       /* Título no se deforma */
+    flex-shrink: 0;       /* Título se mantiene arriba */
 }
 
 #lista-ranking {
     padding-left: 20px;
     margin: 10px 0;
-    flex-grow: 1;         /* Se expande para usar todo el espacio central */
-    overflow-y: auto;     /* Scroll interno */
+    flex-grow: 1;         /* Lista se expande ocupando espacio disponible */
+    overflow-y: auto;     /* Scroll interno activado solo aquí */
     padding-right: 5px;
     scrollbar-width: thin; 
 }
@@ -125,6 +125,7 @@ canvas {
 
 /* Asegurar que el botón dentro del panel se mantenga abajo */
 #panel-ranking button {
-    margin-top: auto;
+    margin-top: auto;     /* Empuja el botón al final del contenedor */
     width: 100%;
+    flex-shrink: 0;       /* Evita que el botón se encoja */
 }
