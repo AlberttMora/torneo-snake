@@ -75,15 +75,12 @@ canvas {
     border: 4px solid #30363d;
     background-color: #000;
     box-shadow: 0 0 20px rgba(46, 164, 79, 0.3);
-
-    max-width: 95%;      /* Deja un mini margen a los lados para que no pegue al borde del cel */
-    height: auto;        /* Hace que el alto se encoja proporcionalmente al ancho */
-    display: block;      /* Nos permite centrarlo con los márgenes */
-    margin: 10px auto;   /* Centra el canvas horizontalmente en la pantalla */
-    touch-action: none;  /* Bloquea por completo que el dedo mueva la página al jugar */
+    max-width: 95%;
+    height: auto;
+    display: block;
+    margin: 10px auto;
+    touch-action: none;
 }
-
-
 
 /* Tabla de Posiciones flotante */
 #panel-ranking {
@@ -95,9 +92,11 @@ canvas {
     padding: 15px;
     border-radius: 8px;
     width: 220px;
-    max-height: 80vh;
-    overflow-y: auto;
+    height: 80vh; /* Altura controlada para no salir de pantalla */
     box-shadow: -5px 5px 15px rgba(0,0,0,0.3);
+    
+    display: flex;        /* Flexbox para controlar el botón */
+    flex-direction: column;
 }
 
 #panel-ranking h3 {
@@ -106,16 +105,15 @@ canvas {
     padding-bottom: 5px;
     color: #58a6ff;
     text-align: center;
+    flex-shrink: 0;       /* Título no se deforma */
 }
 
 #lista-ranking {
     padding-left: 20px;
-    margin: 0;
-    max-height: 100px;    
-    overflow-y: auto;
+    margin: 10px 0;
+    flex-grow: 1;         /* Se expande para usar todo el espacio central */
+    overflow-y: auto;     /* Scroll interno */
     padding-right: 5px;
-    
-    /* Opcional: para que se vea que hay scroll */
     scrollbar-width: thin; 
 }
 
@@ -123,4 +121,10 @@ canvas {
     padding: 5px 0;
     font-size: 14px;
     border-bottom: 1px solid #21262d;
+}
+
+/* Asegurar que el botón dentro del panel se mantenga abajo */
+#panel-ranking button {
+    margin-top: auto;
+    width: 100%;
 }
