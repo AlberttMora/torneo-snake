@@ -50,20 +50,11 @@ function buclePrincipal() {
 }
 
 function moverCulebrita() {
-    if (culebrita.length === 0) return;
-
     const cabeza = {
         x: culebrita[0].x + direccion.x,
         y: culebrita[0].y + direccion.y
     };
-
     culebrita.unshift(cabeza);
-    
-    if (cabeza.x === manzana.x && cabeza.y === manzana.y) {
-        // Comió manzana
-    } else {
-        culebrita.pop(); 
-    }
 }
 
 function verificarComida() {
@@ -74,6 +65,9 @@ function verificarComida() {
             window.notificarManzanaComida(puntos);
         }
         generarManzana();
+        // No hacemos pop → crece
+    } else {
+        culebrita.pop(); // ← el pop va aquí
     }
 }
 
@@ -194,6 +188,7 @@ function dibujarTodo() {
 
 function terminarJuego() {
     clearInterval(juegoIntervalo);
+
     juegoCorriendo = false;
     
     if (ctx && canvas) {
