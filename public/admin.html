@@ -8,11 +8,11 @@
 </head>
 <body>
     <div class="container">
-        <h1>👑 PANEL DE CONTROL (ADMIN)</h1>
+        <h1> PANEL DE CONTROL (ADMIN)</h1>
         <hr>
         
         <div class="admin-actions">
-            <button id="btn-iniciar" class="btn-primary">🚀 ¡INICIAR TORNEO Y YA!</button>
+            <button id="btn-iniciar" class="btn-primary">INICIAR TORNEO YA!</button>
         </div>
 
         <div class="lobby-section">
@@ -21,7 +21,7 @@
         </div>
 
         <div class="ranking-section">
-            <h2>🏆 Tabla de Posiciones en Vivo</h2>
+            <h2> Tabla de Posiciones en Vivo</h2>
             <table id="tabla-ranking">
                 <thead>
                     <tr>
@@ -44,17 +44,16 @@
         const cuerpoTabla = document.getElementById('cuerpo-tabla');
 
         // Pestaña de pruebas para verificar si el script vive
-        console.log("🟢 El script del Admin cargó correctamente en el navegador.");
+        console.log("El script del Admin cargo correctamente en el navegador.");
 
         if (btnIniciar) {
             btnIniciar.addEventListener('click', () => {
-                // 🔥 ESTA ALERTA TIENE QUE SALIR EN LA PANTALLA SÍ O SÍ 🔥
                 alert("¡Diste click al botón azul! Enviando señal al servidor...");
                 
                 socket.emit('admin_iniciar_torneo'); 
             });
         } else {
-            alert("⚠️ Error: No se encontró el botón con ID 'btn-iniciar' en el HTML.");
+            alert("Error: No se encontró el botón con ID 'btn-iniciar' en el HTML.");
         }
 
         socket.on('actualizar_ranking', (ranking) => {
