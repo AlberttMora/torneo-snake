@@ -111,7 +111,7 @@ canvas {
 #lista-ranking {
     padding-left: 20px;
     margin: 0;
-    max-height: 150px;    
+    max-height: 100px;    
     overflow-y: auto;  
     padding-right: 5px;
 }
