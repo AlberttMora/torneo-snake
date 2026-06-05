@@ -84,24 +84,25 @@ canvas {
 
 /* Tabla de Posiciones flotante */
 #panel-ranking {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    background-color: rgba(22, 27, 34, 0.95);
-    border: 1px solid #30363d;
-    padding: 10px;
-    border-radius: 8px;
-    width: 180px;         /* Un poquito más angosto para el cel */
+    position: fixed !important;
+    top: 10px !important;
+    right: 10px !important;
+    background-color: rgba(22, 27, 34, 0.95) !important;
+    border: 1px solid #30363d !important;
+    padding: 10px !important;
+    border-radius: 8px !important;
+    width: 180px !important;
     
-    /* SOLUCIÓN MÓVIL: Evitamos problemas de altura dinámica */
-    height: 70vh;         
-    max-height: 400px;    /* Esto es clave: nunca será más grande de 400px */
+    /* Forzamos el tamaño para móviles */
+    height: auto !important;
+    max-height: 60vh !important; 
     
-    box-shadow: -5px 5px 15px rgba(0,0,0,0.3);
+    box-shadow: -5px 5px 15px rgba(0,0,0,0.3) !important;
     
-    display: flex;
-    flex-direction: column;
+    display: flex !important;
+    flex-direction: column !important;
 }
+
 
 #panel-ranking h3 {
     margin-top: 0;
@@ -113,12 +114,13 @@ canvas {
 }
 
 #lista-ranking {
-    padding-left: 20px;
-    margin: 10px 0;
-    flex-grow: 1;         /* Lista se expande ocupando espacio disponible */
-    overflow-y: auto;     /* Scroll interno activado solo aquí */
-    padding-right: 5px;
-    scrollbar-width: thin; 
+    padding-left: 20px !important;
+    margin: 10px 0 !important;
+    flex-grow: 1 !important;
+    min-height: 50px !important;
+    overflow-y: auto !important; /* Aquí es donde el scroll debe aparecer */
+    padding-right: 5px !important;
+    scrollbar-width: thin !important;
 }
 
 #lista-ranking li {
