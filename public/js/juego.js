@@ -10,6 +10,13 @@ if (canvas) {
 
 let culebrita = [];
 let direccion = { x: 1, y: 0 }; 
+
+// [AM] FIX CRÍTICO: ultimaDireccion guarda la dirección que se usó en el ÚLTIMO tick real.
+// Los guards del teclado/touch deben comparar contra ésta, NO contra "direccion".
+// Sin esto, dos cambios de dirección rápidos en el mismo tick pasan ambos guards
+// y causan que la culebrita se doble sobre sí misma → colisión falsa en segmento[2].
+let ultimaDireccion = { x: 1, y: 0 };
+
 let manzana = { x: 0, y: 0 };
 let puntos = 0;
 let juegoIntervalo = null;
@@ -25,6 +32,7 @@ window.iniciarJuegoCulebrita = function() {
     puntos = 0;
     culebrita = [{ x: 10, y: 10 }];
     direccion = { x: 1, y: 0 }; // Arranca hacia la derecha
+    ultimaDireccion = { x: 1, y: 0 }; // [AM] FIX: resetear junto con direccion
     juegoCorriendo = true;
 
     generarManzana();
@@ -43,6 +51,10 @@ window.iniciarJuegoCulebrita = function() {
 };
 
 function buclePrincipal() {
+    // [AM] FIX: Guard de seguridad — si el juego ya terminó, no ejecutar nada.
+    // Protege contra intervalos zombie que puedan quedar de rondas anteriores.
+    if (!juegoCorriendo) return;
+
     moverCulebrita();
 
     // verificarComida va ANTES de verificarColisiones para que
@@ -59,6 +71,11 @@ function buclePrincipal() {
 }
 
 function moverCulebrita() {
+    // [AM] FIX CRÍTICO: Guardamos la dirección ANTES de mover.
+    // ultimaDireccion representa el movimiento real que acaba de ocurrir,
+    // y es lo que usan los guards de teclado/touch para evitar reversa instantánea.
+    ultimaDireccion = { x: direccion.x, y: direccion.y };
+
     const cabeza = { x: culebrita[0].x + direccion.x, y: culebrita[0].y + direccion.y };
     culebrita.unshift(cabeza);
     // El pop lo maneja verificarComida
@@ -83,11 +100,13 @@ function verificarColisiones() {
     if (!cabeza) return true;
 
     if (cabeza.x < 0 || cabeza.x >= TOTAL_BLOQUES || cabeza.y < 0 || cabeza.y >= TOTAL_BLOQUES) {
+        console.log(`MUERTE MURO: cabeza=(${cabeza.x},${cabeza.y}) TOTAL_BLOQUES=${TOTAL_BLOQUES}`);
         return true;
     }
 
     for (let i = 1; i < culebrita.length; i++) {
         if (cabeza.x === culebrita[i].x && cabeza.y === culebrita[i].y) {
+            console.log(`MUERTE CUERPO: cabeza=(${cabeza.x},${cabeza.y}) chocó segmento[${i}]=(${culebrita[i].x},${culebrita[i].y}) longitud=${culebrita.length}`);
             return true;
         }
     }
@@ -108,18 +127,21 @@ function configurarControlesTeclado() {
 }
 
 function manejarTeclado(evento) {
+    // [AM] FIX CRÍTICO: Comparamos contra ultimaDireccion (el movimiento real del
+    // último tick), NO contra direccion (que ya pudo haber cambiado este tick).
+    // Esto evita que dos teclas rápidas en el mismo tick anulen el guard anti-reversa.
     switch(evento.key) {
         case 'ArrowUp':
-            if (direccion.y !== 1) direccion = { x: 0, y: -1 };
+            if (ultimaDireccion.y !== 1) direccion = { x: 0, y: -1 };
             break;
         case 'ArrowDown':
-            if (direccion.y !== -1) direccion = { x: 0, y: 1 };
+            if (ultimaDireccion.y !== -1) direccion = { x: 0, y: 1 };
             break;
         case 'ArrowLeft':
-            if (direccion.x !== 1) direccion = { x: -1, y: 0 };
+            if (ultimaDireccion.x !== 1) direccion = { x: -1, y: 0 };
             break;
         case 'ArrowRight':
-            if (direccion.x !== -1) direccion = { x: 1, y: 0 };
+            if (ultimaDireccion.x !== -1) direccion = { x: 1, y: 0 };
             break;
     }
 }
@@ -148,18 +170,20 @@ function manejarTouchEnd(e) {
     if (Math.abs(difX) > Math.abs(difY)) {
         // El movimiento fue mayormente HORIZONTAL (Izquierda o Derecha)
         if (Math.abs(difX) > umbralSensibilidad) {
-            if (difX > 0 && direccion.x !== -1) {
+            // [AM] FIX CRÍTICO: Usamos ultimaDireccion para el guard, igual que teclado
+            if (difX > 0 && ultimaDireccion.x !== -1) {
                 direccion = { x: 1, y: 0 }; // Deslizó a la derecha
-            } else if (difX < 0 && direccion.x !== 1) {
+            } else if (difX < 0 && ultimaDireccion.x !== 1) {
                 direccion = { x: -1, y: 0 }; // Deslizó a la izquierda
             }
         }
     } else {
         // El movimiento fue mayormente VERTICAL (Arriba o Abajo)
         if (Math.abs(difY) > umbralSensibilidad) {
-            if (difY > 0 && direccion.y !== -1) {
+            // [AM] FIX CRÍTICO: Usamos ultimaDireccion para el guard, igual que teclado
+            if (difY > 0 && ultimaDireccion.y !== -1) {
                 direccion = { x: 0, y: 1 }; // Deslizó hacia abajo
-            } else if (difY < 0 && direccion.y !== 1) {
+            } else if (difY < 0 && ultimaDireccion.y !== 1) {
                 direccion = { x: 0, y: -1 }; // Deslizó hacia arriba
             }
         }
