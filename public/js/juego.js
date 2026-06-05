@@ -50,11 +50,10 @@ function buclePrincipal() {
 }
 
 function moverCulebrita() {
-    const cabeza = {
-        x: culebrita[0].x + direccion.x,
-        y: culebrita[0].y + direccion.y
-    };
+    const cabeza = { x: culebrita[0].x + direccion.x, y: culebrita[0].y + direccion.y };
     culebrita.unshift(cabeza);
+    // El pop lo maneja verificarComida para que verificarColisiones
+    // siempre vea la culebrita completa antes de eliminar la cola
 }
 
 function verificarComida() {
@@ -65,9 +64,9 @@ function verificarComida() {
             window.notificarManzanaComida(puntos);
         }
         generarManzana();
-        // No hacemos pop → crece
+        // No hacemos pop → culebrita crece
     } else {
-        culebrita.pop(); // ← el pop va aquí
+        culebrita.pop(); // Movimiento normal → elimina la cola
     }
 }
 
@@ -117,53 +116,62 @@ function manejarTeclado(evento) {
     }
 }
 
+// [AM] FIX: Handlers nombrados para poder hacer removeEventListener correctamente
+// antes eran funciones anónimas dentro de configurarControlesTactiles(), lo que
+// acumulaba un listener nuevo por cada ronda iniciada y causaba game overs fantasma
+function manejarTouchStart(e) {
+    toqueIniciX = e.touches[0].clientX;
+    toqueIniciY = e.touches[0].clientY;
+}
+
+function manejarTouchEnd(e) {
+    if (!toqueIniciX || !toqueIniciY) return;
+
+    const toqueFinX = e.changedTouches[0].clientX;
+    const toqueFinY = e.changedTouches[0].clientY;
+
+    // Calculamos la distancia del desplazamiento matemático (Vectores Δx y Δy)
+    const difX = toqueFinX - toqueIniciX;
+    const difY = toqueFinY - toqueIniciY;
+
+    // Definimos un mínimo de píxeles para que no gire por error (sensibilidad)
+    const umbralSensibilidad = 30; 
+
+    if (Math.abs(difX) > Math.abs(difY)) {
+        // El movimiento fue mayormente HORIZONTAL (Izquierda o Derecha)
+        if (Math.abs(difX) > umbralSensibilidad) {
+            if (difX > 0 && direccion.x !== -1) {
+                direccion = { x: 1, y: 0 }; // Deslizó a la derecha
+            } else if (difX < 0 && direccion.x !== 1) {
+                direccion = { x: -1, y: 0 }; // Deslizó a la izquierda
+            }
+        }
+    } else {
+        // El movimiento fue mayormente VERTICAL (Arriba o Abajo)
+        if (Math.abs(difY) > umbralSensibilidad) {
+            if (difY > 0 && direccion.y !== -1) {
+                direccion = { x: 0, y: 1 }; // Deslizó hacia abajo
+            } else if (difY < 0 && direccion.y !== 1) {
+                direccion = { x: 0, y: -1 }; // Deslizó hacia arriba
+            }
+        }
+    }
+
+    // Reiniciamos variables para el próximo deslizamiento
+    toqueIniciX = 0;
+    toqueIniciY = 0;
+}
+
 function configurarControlesTactiles() {
     if (!canvas) return;
 
-    // Cuando el alumno apoya el dedo en la pantalla
-    canvas.addEventListener('touchstart', (e) => {
-        toqueIniciX = e.touches[0].clientX;
-        toqueIniciY = e.touches[0].clientY;
-    }, { passive: true });
+    // [AM] FIX: Removemos antes de agregar, igual que configurarControlesTeclado()
+    // Esto evita que se apilen múltiples listeners al reiniciar el juego entre rondas
+    canvas.removeEventListener('touchstart', manejarTouchStart);
+    canvas.removeEventListener('touchend', manejarTouchEnd);
 
-    // Cuando el alumno mueve y despega el dedo de la pantalla
-    canvas.addEventListener('touchend', (e) => {
-        if (!toqueIniciX || !toqueIniciY) return;
-
-        const toqueFinX = e.changedTouches[0].clientX;
-        const toqueFinY = e.changedTouches[0].clientY;
-
-        // Calculamos la distancia del desplazamiento matemático (Vectores Δx y Δy)
-        const difX = toqueFinX - toqueIniciX;
-        const difY = toqueFinY - toqueIniciY;
-
-        // Definimos un mínimo de píxeles para que no gire por error (sensibilidad)
-        const umbralSensibilidad = 30; 
-
-        if (Math.abs(difX) > Math.abs(difY)) {
-            // El movimiento fue mayormente HORIZONTAL (Izquierda o Derecha)
-            if (Math.abs(difX) > umbralSensibilidad) {
-                if (difX > 0 && direccion.x !== -1) {
-                    direccion = { x: 1, y: 0 }; // Deslizó a la derecha
-                } else if (difX < 0 && direccion.x !== 1) {
-                    direccion = { x: -1, y: 0 }; // Deslizó a la izquierda
-                }
-            }
-        } else {
-            // El movimiento fue mayormente VERTICAL (Arriba o Abajo)
-            if (Math.abs(difY) > umbralSensibilidad) {
-                if (difY > 0 && direccion.y !== -1) {
-                    direccion = { x: 0, y: 1 }; // Deslizó hacia abajo
-                } else if (difY < 0 && direccion.y !== 1) {
-                    direccion = { x: 0, y: -1 }; // Deslizó hacia arriba
-                }
-            }
-        }
-
-        // Reiniciamos variables para el próximo deslizamiento
-        toqueIniciX = 0;
-        toqueIniciY = 0;
-    }, { passive: true });
+    canvas.addEventListener('touchstart', manejarTouchStart, { passive: true });
+    canvas.addEventListener('touchend', manejarTouchEnd, { passive: true });
 }
 
 function dibujarTodo() {
