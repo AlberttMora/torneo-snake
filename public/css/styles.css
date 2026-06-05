@@ -112,8 +112,11 @@ canvas {
     padding-left: 20px;
     margin: 0;
     max-height: 100px;    
-    overflow-y: auto;  
+    overflow-y: auto;
     padding-right: 5px;
+    
+    /* Opcional: para que se vea que hay scroll */
+    scrollbar-width: thin; 
 }
 
 #lista-ranking li {
