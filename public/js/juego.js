@@ -39,21 +39,24 @@ window.iniciarJuegoCulebrita = function() {
 
 function buclePrincipal() {
     moverCulebrita();
-    
+
+    // [AM] FIX: verificarComida va ANTES de verificarColisiones para que
+    // el pop ocurra primero y verificarColisiones vea la culebrita en su
+    // estado real, sin el segmento extra de la cola vieja
+    verificarComida();
+
     if (verificarColisiones()) {
         terminarJuego();
         return;
     }
 
-    verificarComida();
     dibujarTodo();
 }
 
 function moverCulebrita() {
     const cabeza = { x: culebrita[0].x + direccion.x, y: culebrita[0].y + direccion.y };
     culebrita.unshift(cabeza);
-    // El pop lo maneja verificarComida para que verificarColisiones
-    // siempre vea la culebrita completa antes de eliminar la cola
+    // El pop lo maneja verificarComida
 }
 
 function verificarComida() {
