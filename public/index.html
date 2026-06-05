@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Torneo de Snake en Vivo 🐍</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+
+    <div id="contenedor-lobby" class="pantalla active">
+        <div class="tarjeta-lobby">
+            <h1>Torneo de Snake</h1>
+            <p>Ingresa tu nombre para unirte al servidor con tus compañeros:</p>
+            <input type="text" id="txt-username" placeholder="Ej: Albert_99" maxlength="15">
+            <button id="btn-conectar">Unirse al Torneo</button>
+            <p id="lbl-estado" class="estado-espera"></p>
+        </div>
+    </div>
+
+    <div id="contenedor-juego" class="pantalla">
+        <canvas id="canvas-juego" width="400" height="400"></canvas>
+        <div style="text-align: center; margin-top: 15px;">
+        <button id="btn-volver-lobby" style="display: none; padding: 10px 20px; font-size: 16px; background-color: #2ea44f; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            Volver al Lobby
+        </button>
+    </div>
+</div>
+    </div>
+
+    <div id="panel-ranking">
+        <h3>Tabla de Posiciones</h3>
+        <ol id="lista-ranking">
+            </ol>
+    </div>
+
+    <script src="js/juego.js"></script>
+    <script src="js/red.js"></script>
+</body>
+</html>

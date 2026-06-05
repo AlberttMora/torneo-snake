@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Torneo Snake</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>👑 PANEL DE CONTROL (ADMIN)</h1>
+        <hr>
+        
+        <div class="admin-actions">
+            <button id="btn-iniciar" class="btn-primary">🚀 ¡INICIAR TORNEO Y YA!</button>
+        </div>
+
+        <div class="lobby-section">
+            <h2>👥 Alumnos en el Lobby</h2>
+            <ul id="lista-lobby"></ul>
+        </div>
+
+        <div class="ranking-section">
+            <h2>🏆 Tabla de Posiciones en Vivo</h2>
+            <table id="tabla-ranking">
+                <thead>
+                    <tr>
+                        <th>Posición</th>
+                        <th>Alumno</th>
+                        <th>Puntaje</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="cuerpo-tabla"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const socket = io();
+        const btnIniciar = document.getElementById('btn-iniciar');
+        const cuerpoTabla = document.getElementById('cuerpo-tabla');
+
+        // Pestaña de pruebas para verificar si el script vive
+        console.log("🟢 El script del Admin cargó correctamente en el navegador.");
+
+        if (btnIniciar) {
+            btnIniciar.addEventListener('click', () => {
+                // 🔥 ESTA ALERTA TIENE QUE SALIR EN LA PANTALLA SÍ O SÍ 🔥
+                alert("¡Diste click al botón azul! Enviando señal al servidor...");
+                
+                socket.emit('admin_iniciar_torneo'); 
+            });
+        } else {
+            alert("⚠️ Error: No se encontró el botón con ID 'btn-iniciar' en el HTML.");
+        }
+
+        socket.on('actualizar_ranking', (ranking) => {
+            cuerpoTabla.innerHTML = '';
+            ranking.forEach((jugador, index) => {
+                const fila = document.createElement('tr');
+                fila.innerHTML = `
+                    <td>#${index + 1}</td>
+                    <td><strong>${jugador.username}</strong></td>
+                    <td>${jugador.puntos} pts</td>
+                    <td>${jugador.vivo ? '🐍 Jugando' : '💀 Game Over'}</td>
+                `;
+                cuerpoTabla.appendChild(fila);
+            });
+        });
+    });
+</script>
+</body>
+</html>
