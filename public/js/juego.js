@@ -71,14 +71,13 @@ function buclePrincipal() {
 }
 
 function moverCulebrita() {
-    // [AM] FIX CRÍTICO: Guardamos la dirección ANTES de mover.
-    // ultimaDireccion representa el movimiento real que acaba de ocurrir,
-    // y es lo que usan los guards de teclado/touch para evitar reversa instantánea.
     ultimaDireccion = { x: direccion.x, y: direccion.y };
-
     const cabeza = { x: culebrita[0].x + direccion.x, y: culebrita[0].y + direccion.y };
+    
+    // Log para ver a dónde intenta ir la culebrita
+    console.log(`DEBUG: Moviendo a (${cabeza.x}, ${cabeza.y}) con dir (${direccion.x}, ${direccion.y})`);
+    
     culebrita.unshift(cabeza);
-    // El pop lo maneja verificarComida
 }
 
 function verificarComida() {
@@ -99,18 +98,22 @@ function verificarColisiones() {
     const cabeza = culebrita[0];
     if (!cabeza) return true;
 
+    // Verificar muros
     if (cabeza.x < 0 || cabeza.x >= TOTAL_BLOQUES || cabeza.y < 0 || cabeza.y >= TOTAL_BLOQUES) {
-        console.log(`MUERTE MURO: cabeza=(${cabeza.x},${cabeza.y}) TOTAL_BLOQUES=${TOTAL_BLOQUES}`);
+        console.log(`💀 MUERTE POR MURO en (${cabeza.x}, ${cabeza.y})`);
         return true;
     }
 
+    // Verificar cuerpo con detalle
     for (let i = 1; i < culebrita.length; i++) {
         if (cabeza.x === culebrita[i].x && cabeza.y === culebrita[i].y) {
-            console.log(`MUERTE CUERPO: cabeza=(${cabeza.x},${cabeza.y}) chocó segmento[${i}]=(${culebrita[i].x},${culebrita[i].y}) longitud=${culebrita.length}`);
+            console.log(`💀 MUERTE POR CUERPO detectada:`);
+            console.log(`   -> Cabeza en: (${cabeza.x}, ${cabeza.y})`);
+            console.log(`   -> Chocó con segmento [${i}] en: (${culebrita[i].x}, ${culebrita[i].y})`);
+            console.log(`   -> Longitud total de culebra: ${culebrita.length}`);
             return true;
         }
     }
-
     return false;
 }
 
