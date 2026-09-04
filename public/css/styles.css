@@ -1,3 +1,141 @@
+/* Configuración General de la pantalla */
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #0d1117;
+    color: #c9d1d9;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Control de pantallas activas/ocultas */
+.pantalla {
+    display: none;
+}
+.pantalla.active {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Tarjeta del Lobby */
+.tarjeta-lobby {
+    background-color: #161b22;
+    padding: 30px;
+    border-radius: 10px;
+    border: 2px solid #238636;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.tarjeta-lobby h1 {
+    color: #2ea44f;
+    margin-top: 0;
+}
+
+input {
+    padding: 10px;
+    width: 80%;
+    border-radius: 5px;
+    border: 1px solid #30363d;
+    background-color: #0d1117;
+    color: white;
+    font-size: 16px;
+    margin-bottom: 15px;
+}
+
+button {
+    background-color: #238636;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+button:hover {
+    background-color: #2ea44f;
+}
+
+button:disabled {
+    background-color: #21262d;
+    color: #8b949e;
+    cursor: not-allowed;
+}
+
+/* El lienzo del juego (Culebrita) */
+canvas {
+    border: 4px solid #30363d;
+    background-color: #000;
+    box-shadow: 0 0 20px rgba(46, 164, 79, 0.3);
+    max-width: 95%;
+    height: auto;
+    display: block;
+    margin: 10px auto;
+    touch-action: none;
+}
+
+/* Tabla de Posiciones flotante */
+#panel-ranking {
+    position: fixed !important;
+    top: 10px !important;
+    right: 10px !important;
+    background-color: rgba(22, 27, 34, 0.95) !important;
+    border: 1px solid #30363d !important;
+    padding: 10px !important;
+    border-radius: 8px !important;
+    width: 180px !important;
+    
+    /* Forzamos el tamaño para móviles */
+    height: auto !important;
+    max-height: 25vh !important; 
+    
+    box-shadow: -5px 5px 15px rgba(0,0,0,0.3) !important;
+    
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+
+#panel-ranking h3 {
+    margin-top: 0;
+    border-bottom: 2px solid #21262d;
+    padding-bottom: 5px;
+    color: #58a6ff;
+    text-align: center;
+    flex-shrink: 0;       /* Título se mantiene arriba */
+}
+
+#lista-ranking {
+    padding-left: 20px !important;
+    margin: 10px 0 !important;
+    flex-grow: 1 !important;
+    min-height: 50px !important;
+    overflow-y: auto !important; /* Aquí es donde el scroll debe aparecer */
+    padding-right: 5px !important;
+    scrollbar-width: thin !important;
+}
+
+#lista-ranking li {
+    padding: 5px 0;
+    font-size: 14px;
+    border-bottom: 1px solid #21262d;
+}
+
+/* Asegurar que el botón dentro del panel se mantenga abajo */
+#panel-ranking button {
+    margin-top: auto;     /* Empuja el botón al final del contenedor */
+    width: 100%;
+    flex-shrink: 0;       /* Evita que el botón se encoja */
+}
+
 /* [AM] Modal de la pregunta al comer manzana */
 .modal-overlay {
     display: none;
