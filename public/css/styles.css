@@ -1,13 +1,15 @@
 /* Configuración General de la pantalla */
 body {
     margin: 0;
-    padding: 20px;
+    padding: 0;
     background-color: #0d1117;
     color: #c9d1d9;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    min-height: 100vh;
-    box-sizing: border-box;
-    overflow-y: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
 }
 
 /* Control de pantallas activas/ocultas */
@@ -155,4 +157,11 @@ canvas {
 
 .opcion-btn:hover {
     background-color: #30363d;
+}
+
+.pagina-admin {
+    height: auto;
+    min-height: 100vh;
+    overflow-y: auto;
+    display: block;
 }
