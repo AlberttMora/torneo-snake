@@ -159,9 +159,320 @@ canvas {
     background-color: #30363d;
 }
 
-.pagina-admin {
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ============================= */
+/* CONFIGURACION EXCLUSIVA ADMIN */
+/* ============================= */
+
+body.pagina-admin {
+    display: block;
     height: auto;
     min-height: 100vh;
     overflow-y: auto;
+    overflow-x: hidden;
+}
+
+body.pagina-admin .container {
+    min-height: 100vh;
+    height: auto;
+    padding-bottom: 40px;
+    box-sizing: border-box;
+}
+
+/* ========================================= */
+/* ESTILOS EXCLUSIVOS DEL PANEL DE ADMIN    */
+/* ========================================= */
+
+body.pagina-admin {
     display: block;
+    min-height: 100vh;
+    height: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 30px;
+    box-sizing: border-box;
+}
+
+/* Contenedor principal */
+
+body.pagina-admin .container {
+    width: 90%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding-bottom: 50px;
+    box-sizing: border-box;
+}
+
+/* Titulo principal */
+
+body.pagina-admin .container > h1 {
+    color: #2ea44f;
+    text-align: center;
+    margin: 0 0 20px 0;
+    font-size: 30px;
+}
+
+body.pagina-admin hr {
+    border: none;
+    border-top: 1px solid #30363d;
+    margin-bottom: 25px;
+}
+
+/* ========================================= */
+/* BOTONES                                   */
+/* ========================================= */
+
+body.pagina-admin button {
+    cursor: pointer;
+}
+
+body.pagina-admin .btn-primary {
+    background-color: #238636;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: bold;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+body.pagina-admin .btn-primary:hover {
+    background-color: #2ea44f;
+}
+
+body.pagina-admin .btn-primary:active {
+    transform: scale(0.98);
+}
+
+/* Boton de iniciar torneo */
+
+body.pagina-admin #btn-iniciar {
+    width: 100%;
+    font-size: 18px;
+    padding: 15px;
+}
+
+/* ========================================= */
+/* SECCIONES                                 */
+/* ========================================= */
+
+body.pagina-admin .pregunta-section,
+body.pagina-admin .lobby-section,
+body.pagina-admin .ranking-section {
+    background-color: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 25px;
+    margin-top: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+}
+
+/* Titulos de las secciones */
+
+body.pagina-admin .pregunta-section h2,
+body.pagina-admin .lobby-section h2,
+body.pagina-admin .ranking-section h2 {
+    color: #58a6ff;
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 21px;
+}
+
+/* ========================================= */
+/* LABELS                                    */
+/* ========================================= */
+
+body.pagina-admin label {
+    display: block;
+    margin-top: 12px;
+    margin-bottom: 6px;
+    color: #c9d1d9;
+    font-weight: bold;
+}
+
+/* ========================================= */
+/* INPUTS                                    */
+/* ========================================= */
+
+body.pagina-admin input[type="text"],
+body.pagina-admin input[type="number"] {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 12px;
+}
+
+/* Input pequeño del tiempo */
+
+body.pagina-admin #txt-tiempo-om {
+    width: 120px !important;
+}
+
+/* ========================================= */
+/* TEXTAREA                                  */
+/* ========================================= */
+
+body.pagina-admin textarea {
+    width: 100%;
+    box-sizing: border-box;
+    resize: vertical;
+    font-family: Consolas, monospace;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* ========================================= */
+/* CODE / PRE                                */
+/* ========================================= */
+
+body.pagina-admin code {
+    background-color: #0d1117;
+    color: #79c0ff;
+    padding: 3px 6px;
+    border-radius: 4px;
+}
+
+body.pagina-admin pre {
+    overflow-x: auto;
+    border: 1px solid #30363d;
+    line-height: 1.5;
+}
+
+/* ========================================= */
+/* LISTA DE PREGUNTAS                        */
+/* ========================================= */
+
+body.pagina-admin #lista-preguntas-admin {
+    background-color: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 10px !important;
+    max-height: 300px !important;
+    overflow-y: auto !important;
+}
+
+/* Scroll de la lista */
+
+body.pagina-admin #lista-preguntas-admin::-webkit-scrollbar {
+    width: 8px;
+}
+
+body.pagina-admin #lista-preguntas-admin::-webkit-scrollbar-track {
+    background: #161b22;
+}
+
+body.pagina-admin #lista-preguntas-admin::-webkit-scrollbar-thumb {
+    background: #30363d;
+    border-radius: 5px;
+}
+
+body.pagina-admin #lista-preguntas-admin::-webkit-scrollbar-thumb:hover {
+    background: #484f58;
+}
+
+/* ========================================= */
+/* LISTA DEL LOBBY                           */
+/* ========================================= */
+
+body.pagina-admin #lista-lobby {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+body.pagina-admin #lista-lobby li {
+    background-color: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 8px;
+}
+
+/* ========================================= */
+/* TABLA DE RANKING                          */
+/* ========================================= */
+
+body.pagina-admin #tabla-ranking {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    background-color: #0d1117;
+}
+
+body.pagina-admin #tabla-ranking th {
+    background-color: #21262d;
+    color: #58a6ff;
+    padding: 12px;
+    text-align: left;
+    border-bottom: 2px solid #30363d;
+}
+
+body.pagina-admin #tabla-ranking td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #30363d;
+}
+
+body.pagina-admin #tabla-ranking tbody tr:hover {
+    background-color: #161b22;
+}
+
+/* ========================================= */
+/* MENSAJES DE ESTADO                       */
+/* ========================================= */
+
+body.pagina-admin #lbl-pregunta-estado,
+body.pagina-admin #lbl-bulk-estado,
+body.pagina-admin #lbl-om-estado {
+    min-height: 20px;
+    margin: 10px 0 0 0;
+}
+
+/* ========================================= */
+/* RESPONSIVE / CELULAR                     */
+/* ========================================= */
+
+@media (max-width: 700px) {
+
+    body.pagina-admin {
+        padding: 15px;
+    }
+
+    body.pagina-admin .container {
+        width: 100%;
+    }
+
+    body.pagina-admin .container > h1 {
+        font-size: 24px;
+    }
+
+    body.pagina-admin .pregunta-section,
+    body.pagina-admin .lobby-section,
+    body.pagina-admin .ranking-section {
+        padding: 18px;
+    }
+
+    body.pagina-admin .pregunta-section h2,
+    body.pagina-admin .lobby-section h2,
+    body.pagina-admin .ranking-section h2 {
+        font-size: 18px;
+    }
+
+    body.pagina-admin #tabla-ranking {
+        font-size: 13px;
+    }
+
+    body.pagina-admin #tabla-ranking th,
+    body.pagina-admin #tabla-ranking td {
+        padding: 8px 5px;
+    }
 }
