@@ -14,7 +14,21 @@
         <hr>
 
         <div class="admin-actions">
-            <button id="btn-iniciar" class="btn-primary">INICIAR TORNEO YA!</button>
+            <div class="tiempo-torneo">
+                <label for="tiempo-juego">
+                    ⏱️ Tiempo limite del juego (minutos):
+                </label>
+
+                <input type="number" id="tiempo-juego" min="1" max="60" value="5">
+
+                <small>
+                    El torneo terminara automaticamente cuando se acabe este tiempo.
+                </small>
+            </div>
+
+            <button id="btn-iniciar" class="btn-primary">
+                INICIAR TORNEO YA!
+            </button>
         </div>
 
         <!-- [AM] Sección para agregar preguntas una por una -->
@@ -81,10 +95,6 @@ Correcta: B</pre>
             </ul>
             <button id="btn-vaciar-preguntas" style="background-color:#da3633; margin-top:10px;">Vaciar todas</button>
         </div>
-
-        <label for="tiempo-juego">Tiempo limite del juego (minutos):</label>
-
-        <input type="number" id="tiempo-juego" min="1" max="60" value="5">
 
         <div class="lobby-section">
             <h2>👥 Alumnos en el Lobby</h2>
