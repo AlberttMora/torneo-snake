@@ -177,32 +177,33 @@ function elegirPreguntaAleatoria() {
 }
 
 // [AM] Muestra el modal, arranca la cuenta regresiva y espera la respuesta del jugador.
+// [AM] Muestra el modal, arranca la cuenta regresiva y espera la respuesta del jugador.
+// Soporta dos modos: opción múltiple (botones A/B/C/D) o respuesta libre (input de texto).
 function mostrarModalPregunta() {
     const modal = document.getElementById('modal-pregunta');
     const txtPregunta = document.getElementById('txt-pregunta-modal');
     const inputRespuesta = document.getElementById('input-respuesta');
+    const contenedorOpciones = document.getElementById('opciones-pregunta');
     const lblTimer = document.getElementById('timer-pregunta');
     const lblFeedback = document.getElementById('feedback-pregunta');
     const btnResponder = document.getElementById('btn-responder');
 
     // [AM] Modo compatibilidad: si el HTML no tiene el modal, no bloqueamos el juego.
-    if (!modal || !txtPregunta || !inputRespuesta || !lblTimer || !btnResponder) {
+    if (!modal || !txtPregunta || !lblTimer) {
         resolverPregunta(true);
         return;
     }
 
-    // [AM] Ahora elegimos la pregunta al azar de la lista en vez de usar una fija.
     const pregunta = elegirPreguntaAleatoria();
-    const tiempoLimiteSeg = Number(pregunta.tiempoLimite) > 0 ? Number(pregunta.tiempoLimite) : 5;
+    const esOpcionMultiple = Array.isArray(pregunta.opciones) && pregunta.opciones.length > 0;
+    const tiempoLimiteSeg = Number(pregunta.tiempoLimite) > 0 ? Number(pregunta.tiempoLimite) : (esOpcionMultiple ? 8 : 5);
     const tiempoLimiteMs = tiempoLimiteSeg * 1000;
     let tiempoRestante = tiempoLimiteSeg;
 
     txtPregunta.textContent = pregunta.texto;
-    inputRespuesta.value = '';
     if (lblFeedback) lblFeedback.textContent = '';
     lblTimer.textContent = `⏱️ ${tiempoRestante}s`;
     modal.style.display = 'flex';
-    inputRespuesta.focus();
 
     const tiempoInicio = Date.now();
 
@@ -211,36 +212,74 @@ function mostrarModalPregunta() {
         lblTimer.textContent = `⏱️ ${Math.max(tiempoRestante, 0)}s`;
     }, 1000);
 
-    function limpiarListeners() {
+    let yaRespondio = false;
+
+    // [AM] Punto único de salida: sea por click en una opción, por Enter, o por timeout.
+    function finalizar(acerto) {
+        if (yaRespondio) return;
+        yaRespondio = true;
         clearInterval(respuestaIntervaloId);
         clearTimeout(respuestaTimeoutId);
-        btnResponder.removeEventListener('click', manejarEnvio);
-        inputRespuesta.removeEventListener('keydown', manejarEnter);
-    }
-
-    function manejarEnvio() {
-        const tiempoUsado = Date.now() - tiempoInicio;
-        const respuestaUsuario = inputRespuesta.value.trim().toLowerCase();
-        const respuestaCorrecta = (pregunta.respuesta || '').trim().toLowerCase();
-        const acerto = respuestaUsuario !== '' && respuestaUsuario === respuestaCorrecta && tiempoUsado <= tiempoLimiteMs;
-
-        limpiarListeners();
         modal.style.display = 'none';
         resolverPregunta(acerto);
     }
 
-    function manejarEnter(evento) {
-        if (evento.key === 'Enter') manejarEnvio();
-    }
+    if (esOpcionMultiple) {
+        // [AM] Modo opción múltiple: mostramos botones A/B/C/D y ocultamos el input libre.
+        if (inputRespuesta) inputRespuesta.style.display = 'none';
+        if (btnResponder) btnResponder.style.display = 'none';
 
-    btnResponder.addEventListener('click', manejarEnvio);
-    inputRespuesta.addEventListener('keydown', manejarEnter);
+        if (contenedorOpciones) {
+            contenedorOpciones.style.display = 'flex';
+            contenedorOpciones.innerHTML = '';
+
+            pregunta.opciones.forEach((opcion) => {
+                const btnOpcion = document.createElement('button');
+                btnOpcion.className = 'opcion-btn';
+                btnOpcion.textContent = `${opcion.letra}) ${opcion.texto}`;
+                btnOpcion.addEventListener('click', () => {
+                    const tiempoUsado = Date.now() - tiempoInicio;
+                    const acerto = opcion.letra.toUpperCase() === (pregunta.respuesta || '').trim().toUpperCase()
+                        && tiempoUsado <= tiempoLimiteMs;
+                    finalizar(acerto);
+                });
+                contenedorOpciones.appendChild(btnOpcion);
+            });
+        }
+    } else {
+        // [AM] Modo respuesta libre (compatibilidad con preguntas de texto, sin opciones)
+        if (contenedorOpciones) {
+            contenedorOpciones.style.display = 'none';
+            contenedorOpciones.innerHTML = '';
+        }
+        if (inputRespuesta) {
+            inputRespuesta.style.display = 'block';
+            inputRespuesta.value = '';
+            inputRespuesta.focus();
+        }
+        if (btnResponder) btnResponder.style.display = 'inline-block';
+
+        function manejarEnvio() {
+            const tiempoUsado = Date.now() - tiempoInicio;
+            const respuestaUsuario = inputRespuesta.value.trim().toLowerCase();
+            const respuestaCorrecta = (pregunta.respuesta || '').trim().toLowerCase();
+            const acerto = respuestaUsuario !== '' && respuestaUsuario === respuestaCorrecta && tiempoUsado <= tiempoLimiteMs;
+            btnResponder.removeEventListener('click', manejarEnvio);
+            inputRespuesta.removeEventListener('keydown', manejarEnter);
+            finalizar(acerto);
+        }
+
+        function manejarEnter(evento) {
+            if (evento.key === 'Enter') manejarEnvio();
+        }
+
+        btnResponder.addEventListener('click', manejarEnvio);
+        inputRespuesta.addEventListener('keydown', manejarEnter);
+    }
 
     // [AM] Si se acaba el tiempo mínimo sin responder, cuenta como fallo automático.
     respuestaTimeoutId = setTimeout(() => {
-        limpiarListeners();
-        modal.style.display = 'none';
-        resolverPregunta(false);
+        finalizar(false);
     }, tiempoLimiteMs);
 }
 

@@ -35,6 +35,24 @@
             </ol>
     </div>
 
+    <!-- [AM] Modal que aparece al comer una manzana: hay que responder para ganar el punto -->
+    <div id="modal-pregunta" class="modal-overlay">
+        <div class="modal-pregunta-caja">
+            <h2>❓ ¡Manzana comida!</h2>
+            <p id="txt-pregunta-modal">Cargando pregunta...</p>
+
+            <!-- [AM] Botones A/B/C/D para preguntas de opción múltiple -->
+            <div id="opciones-pregunta" class="opciones-pregunta"></div>
+
+            <!-- [AM] Input de texto libre, solo se usa si la pregunta NO tiene opciones -->
+            <input type="text" id="input-respuesta" placeholder="Escribe tu respuesta" autocomplete="off">
+
+            <div id="timer-pregunta" class="timer-pregunta">⏱️ 5s</div>
+            <button id="btn-responder">Responder</button>
+            <p id="feedback-pregunta"></p>
+        </div>
+    </div>
+
     <script src="js/juego.js"></script>
     <script src="js/red.js"></script>
 </body>

@@ -45,18 +45,36 @@ function broadcastPreguntas() {
 }
 
 function preguntaValida(data) {
-    return data && typeof data.texto === 'string' && data.texto.trim() !== ''
-        && typeof data.respuesta === 'string' && data.respuesta.trim() !== '';
+    if (!data || typeof data.texto !== 'string' || data.texto.trim() === '') return false;
+    if (typeof data.respuesta !== 'string' || data.respuesta.trim() === '') return false;
+
+    // [AM] Si trae opciones (pregunta de opción múltiple), valida que estén bien formadas
+    if (data.opciones !== undefined) {
+        if (!Array.isArray(data.opciones) || data.opciones.length < 2) return false;
+        for (const op of data.opciones) {
+            if (!op || typeof op.letra !== 'string' || typeof op.texto !== 'string' || op.texto.trim() === '') return false;
+        }
+    }
+    return true;
 }
 
 function normalizarPregunta(data) {
-    return {
+    const pregunta = {
         texto: data.texto.trim(),
         respuesta: data.respuesta.trim(),
         tiempoLimite: Number(data.tiempoLimite) > 0 ? Number(data.tiempoLimite) : 5
     };
-}
 
+    // [AM] Guardamos las opciones (A/B/C/D) si la pregunta es de opción múltiple
+    if (Array.isArray(data.opciones) && data.opciones.length > 0) {
+        pregunta.opciones = data.opciones.map(op => ({
+            letra: op.letra.trim(),
+            texto: op.texto.trim()
+        }));
+    }
+
+    return pregunta;
+}
 io.on('connection', (socket) => {
     console.log(`🔌 Nuevo dispositivo conectado: ${socket.id}`);
 
