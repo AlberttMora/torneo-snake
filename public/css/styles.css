@@ -476,3 +476,30 @@ body.pagina-admin #lbl-om-estado {
         padding: 8px 5px;
     }
 }
+
+body.pagina-admin .tiempo-torneo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 15px;
+    padding: 15px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+}
+
+body.pagina-admin .tiempo-torneo label {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+body.pagina-admin .tiempo-torneo input {
+    width: 120px;
+    padding: 10px;
+    font-size: 18px;
+    box-sizing: border-box;
+}
+
+body.pagina-admin .tiempo-torneo small {
+    color: #8b949e;
+}
