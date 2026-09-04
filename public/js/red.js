@@ -61,6 +61,17 @@ socket.on('actualizar_ranking', (ranking) => {
     }
 });
 
+// [AM] Guardamos la pregunta vigente (enviada por el server / el admin) en una
+// variable global para que juego.js la use cuando alguien coma una manzana.
+window.PREGUNTA_ACTUAL = { texto: "Cargando pregunta...", respuesta: "", tiempoLimite: 5 };
+
+socket.on('pregunta_actualizada', (data) => {
+    if (data && typeof data.texto === 'string') {
+        window.PREGUNTA_ACTUAL = data;
+        console.log(`❓ Nueva pregunta recibida: "${data.texto}" (límite ${data.tiempoLimite}s)`);
+    }
+});
+
 // 4. FUNCIONES ENLACE (Llamadas desde tu juego.js)
 window.notificarManzanaComida = function(nuevosPuntos) {
     socket.emit('actualizar_puntos', nuevosPuntos);

@@ -22,6 +22,14 @@ let puntos = 0;
 let juegoIntervalo = null;
 let juegoCorriendo = false;
 
+// [AM] Bandera para saber si el juego está congelado esperando que respondan la pregunta.
+// Mientras esté en true, buclePrincipal no debe correr (por eso no reiniciamos el intervalo).
+let esperandoRespuesta = false;
+
+// [AM] IDs de temporizadores del modal de pregunta, para poder limpiarlos sin dejar basura.
+let respuestaTimeoutId = null;
+let respuestaIntervaloId = null;
+
 // Variables globales para guardar dónde inicia y termina el dedo en el cel
 let toqueIniciX = 0;
 let toqueIniciY = 0;
@@ -34,6 +42,11 @@ window.iniciarJuegoCulebrita = function() {
     direccion = { x: 1, y: 0 }; // Arranca hacia la derecha
     ultimaDireccion = { x: 1, y: 0 }; // [AM] FIX: resetear junto con direccion
     juegoCorriendo = true;
+    esperandoRespuesta = false; // [AM] Por si quedó en true de una ronda anterior
+
+    // [AM] Si el modal de pregunta quedó visible de una ronda pasada, lo ocultamos
+    const modalPregunta = document.getElementById('modal-pregunta');
+    if (modalPregunta) modalPregunta.style.display = 'none';
 
     generarManzana();
     configurarControlesTeclado();
@@ -54,6 +67,9 @@ function buclePrincipal() {
     // [AM] FIX: Guard de seguridad — si el juego ya terminó, no ejecutar nada.
     // Protege contra intervalos zombie que puedan quedar de rondas anteriores.
     if (!juegoCorriendo) return;
+
+    // [AM] Si estamos esperando que respondan la pregunta, el juego está congelado.
+    if (esperandoRespuesta) return;
 
     moverCulebrita();
 
@@ -83,12 +99,9 @@ function moverCulebrita() {
 function verificarComida() {
     const cabeza = culebrita[0];
     if (cabeza && cabeza.x === manzana.x && cabeza.y === manzana.y) {
-        puntos += 10;
-        if (typeof window.notificarManzanaComida === 'function') {
-            window.notificarManzanaComida(puntos);
-        }
-        generarManzana();
-        // No hacemos pop → culebrita crece
+        // [AM] Ya no sumamos puntos ni regeneramos la manzana de una vez:
+        // primero hay que responder correctamente la pregunta.
+        pausarParaPregunta();
     } else {
         culebrita.pop(); // Movimiento normal → elimina la cola
     }
@@ -122,6 +135,129 @@ function generarManzana() {
         x: Math.floor(Math.random() * TOTAL_BLOQUES),
         y: Math.floor(Math.random() * TOTAL_BLOQUES)
     };
+}
+
+// [AM] Congela el juego y muestra el modal de pregunta al comer la manzana.
+function pausarParaPregunta() {
+    if (juegoIntervalo) {
+        clearInterval(juegoIntervalo);
+        juegoIntervalo = null;
+    }
+    esperandoRespuesta = true;
+    dibujarTodo(); // Deja la pantalla congelada con la culebrita sobre la manzana
+    mostrarModalPregunta();
+}
+
+// [AM] Muestra el modal, arranca la cuenta regresiva y espera la respuesta del jugador.
+function mostrarModalPregunta() {
+    const modal = document.getElementById('modal-pregunta');
+    const txtPregunta = document.getElementById('txt-pregunta-modal');
+    const inputRespuesta = document.getElementById('input-respuesta');
+    const lblTimer = document.getElementById('timer-pregunta');
+    const lblFeedback = document.getElementById('feedback-pregunta');
+    const btnResponder = document.getElementById('btn-responder');
+
+    // [AM] Modo compatibilidad: si el HTML no tiene el modal, no bloqueamos el juego.
+    if (!modal || !txtPregunta || !inputRespuesta || !lblTimer || !btnResponder) {
+        resolverPregunta(true);
+        return;
+    }
+
+    const pregunta = window.PREGUNTA_ACTUAL || { texto: '¿Sin pregunta configurada?', respuesta: '', tiempoLimite: 5 };
+    const tiempoLimiteSeg = Number(pregunta.tiempoLimite) > 0 ? Number(pregunta.tiempoLimite) : 5;
+    const tiempoLimiteMs = tiempoLimiteSeg * 1000;
+    let tiempoRestante = tiempoLimiteSeg;
+
+    txtPregunta.textContent = pregunta.texto;
+    inputRespuesta.value = '';
+    if (lblFeedback) lblFeedback.textContent = '';
+    lblTimer.textContent = `⏱️ ${tiempoRestante}s`;
+    modal.style.display = 'flex';
+    inputRespuesta.focus();
+
+    const tiempoInicio = Date.now();
+
+    respuestaIntervaloId = setInterval(() => {
+        tiempoRestante -= 1;
+        lblTimer.textContent = `⏱️ ${Math.max(tiempoRestante, 0)}s`;
+    }, 1000);
+
+    function limpiarListeners() {
+        clearInterval(respuestaIntervaloId);
+        clearTimeout(respuestaTimeoutId);
+        btnResponder.removeEventListener('click', manejarEnvio);
+        inputRespuesta.removeEventListener('keydown', manejarEnter);
+    }
+
+    function manejarEnvio() {
+        const tiempoUsado = Date.now() - tiempoInicio;
+        const respuestaUsuario = inputRespuesta.value.trim().toLowerCase();
+        const respuestaCorrecta = (pregunta.respuesta || '').trim().toLowerCase();
+        const acerto = respuestaUsuario !== '' && respuestaUsuario === respuestaCorrecta && tiempoUsado <= tiempoLimiteMs;
+
+        limpiarListeners();
+        modal.style.display = 'none';
+        resolverPregunta(acerto);
+    }
+
+    function manejarEnter(evento) {
+        if (evento.key === 'Enter') manejarEnvio();
+    }
+
+    btnResponder.addEventListener('click', manejarEnvio);
+    inputRespuesta.addEventListener('keydown', manejarEnter);
+
+    // [AM] Si se acaba el tiempo mínimo sin responder, cuenta como fallo automático.
+    respuestaTimeoutId = setTimeout(() => {
+        limpiarListeners();
+        modal.style.display = 'none';
+        resolverPregunta(false);
+    }, tiempoLimiteMs);
+}
+
+// [AM] Aplica el resultado de la pregunta: punto y sigue normal, o castigo de 3s sin punto.
+function resolverPregunta(acerto) {
+    esperandoRespuesta = false;
+
+    if (acerto) {
+        puntos += 10;
+        if (typeof window.notificarManzanaComida === 'function') {
+            window.notificarManzanaComida(puntos);
+        }
+        generarManzana();
+        reanudarJuego();
+    } else {
+        // [AM] Castigo: no gana el punto y la culebrita NO crece
+        // (se comporta como un movimiento normal, se le quita la cola extra).
+        culebrita.pop();
+        generarManzana();
+        mostrarCastigo();
+    }
+}
+
+// [AM] Pantalla roja de penalización durante 3 segundos, luego reanuda el juego.
+function mostrarCastigo() {
+    if (ctx && canvas) {
+        ctx.fillStyle = 'rgba(255, 0, 0, 0.35)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '20px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('❌ Respuesta incorrecta', canvas.width / 2, canvas.height / 2 - 10);
+        ctx.fillText('Penalización: 3s', canvas.width / 2, canvas.height / 2 + 20);
+    }
+
+    setTimeout(() => {
+        reanudarJuego();
+    }, 3000);
+}
+
+// [AM] Reanuda el bucle del juego si sigue vivo y no hay otro intervalo corriendo.
+function reanudarJuego() {
+    if (!juegoCorriendo) return; // El jugador pudo haber muerto mientras respondía/pagaba castigo
+    if (juegoIntervalo) return; // Ya está corriendo, evita duplicar el intervalo
+    juegoIntervalo = setInterval(buclePrincipal, 120);
+    dibujarTodo();
 }
 
 function configurarControlesTeclado() {
@@ -234,6 +370,11 @@ function terminarJuego() {
     juegoIntervalo = null; // [AM] FIX: nulleamos para que iniciarJuegoCulebrita
                            // sepa que no hay intervalo activo en la próxima ronda
     juegoCorriendo = false;
+    esperandoRespuesta = false; // [AM] Por si moría durante una pregunta pendiente
+
+    // [AM] Si el modal seguía abierto (poco probable pero por seguridad), lo cerramos
+    const modalPregunta = document.getElementById('modal-pregunta');
+    if (modalPregunta) modalPregunta.style.display = 'none';
     
     if (ctx && canvas) {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';

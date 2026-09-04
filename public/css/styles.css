@@ -1,137 +1,70 @@
-/* Configuración General de la pantalla */
-body {
-    margin: 0;
-    padding: 0;
-    background-color: #0d1117;
-    color: #c9d1d9;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    overflow: hidden;
-}
-
-/* Control de pantallas activas/ocultas */
-.pantalla {
+/* [AM] Modal de la pregunta al comer manzana */
+.modal-overlay {
     display: none;
-}
-.pantalla.active {
-    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 999;
     justify-content: center;
     align-items: center;
 }
 
-/* Tarjeta del Lobby */
-.tarjeta-lobby {
+.modal-pregunta-caja {
     background-color: #161b22;
-    padding: 30px;
+    border: 2px solid #58a6ff;
     border-radius: 10px;
-    border: 2px solid #238636;
+    padding: 25px;
     text-align: center;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    width: 85%;
+    max-width: 360px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
 }
 
-.tarjeta-lobby h1 {
-    color: #2ea44f;
+.modal-pregunta-caja h2 {
     margin-top: 0;
+    color: #58a6ff;
+    font-size: 18px;
 }
 
-input {
-    padding: 10px;
-    width: 80%;
-    border-radius: 5px;
-    border: 1px solid #30363d;
-    background-color: #0d1117;
-    color: white;
+#txt-pregunta-modal {
     font-size: 16px;
+    margin: 10px 0 15px 0;
+}
+
+.timer-pregunta {
+    font-size: 18px;
+    font-weight: bold;
+    color: #ffb703;
     margin-bottom: 15px;
 }
 
-button {
-    background-color: #238636;
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    font-size: 16px;
+#feedback-pregunta {
+    min-height: 20px;
     font-weight: bold;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.2s;
 }
 
-button:hover {
-    background-color: #2ea44f;
+/* [AM] Sección de pregunta en el panel admin */
+.pregunta-section {
+    background-color: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 15px 20px;
+    margin: 20px 0;
+    text-align: left;
 }
 
-button:disabled {
-    background-color: #21262d;
-    color: #8b949e;
-    cursor: not-allowed;
-}
-
-/* El lienzo del juego (Culebrita) */
-canvas {
-    border: 4px solid #30363d;
-    background-color: #000;
-    box-shadow: 0 0 20px rgba(46, 164, 79, 0.3);
-    max-width: 95%;
-    height: auto;
+.pregunta-section label {
     display: block;
-    margin: 10px auto;
-    touch-action: none;
-}
-
-/* Tabla de Posiciones flotante */
-#panel-ranking {
-    position: fixed !important;
-    top: 10px !important;
-    right: 10px !important;
-    background-color: rgba(22, 27, 34, 0.95) !important;
-    border: 1px solid #30363d !important;
-    padding: 10px !important;
-    border-radius: 8px !important;
-    width: 180px !important;
-    
-    /* Forzamos el tamaño para móviles */
-    height: auto !important;
-    max-height: 60vh !important; 
-    
-    box-shadow: -5px 5px 15px rgba(0,0,0,0.3) !important;
-    
-    display: flex !important;
-    flex-direction: column !important;
-}
-
-
-#panel-ranking h3 {
-    margin-top: 0;
-    border-bottom: 2px solid #21262d;
-    padding-bottom: 5px;
-    color: #58a6ff;
-    text-align: center;
-    flex-shrink: 0;       /* Título se mantiene arriba */
-}
-
-#lista-ranking {
-    padding-left: 20px !important;
-    margin: 10px 0 !important;
-    flex-grow: 1 !important;
-    min-height: 50px !important;
-    overflow-y: auto !important; /* Aquí es donde el scroll debe aparecer */
-    padding-right: 5px !important;
-    scrollbar-width: thin !important;
-}
-
-#lista-ranking li {
-    padding: 5px 0;
+    margin-top: 10px;
+    margin-bottom: 5px;
     font-size: 14px;
-    border-bottom: 1px solid #21262d;
+    color: #8b949e;
 }
 
-/* Asegurar que el botón dentro del panel se mantenga abajo */
-#panel-ranking button {
-    margin-top: auto;     /* Empuja el botón al final del contenedor */
+.pregunta-section input {
     width: 100%;
-    flex-shrink: 0;       /* Evita que el botón se encoja */
+    box-sizing: border-box;
 }

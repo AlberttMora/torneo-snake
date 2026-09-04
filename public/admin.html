@@ -15,6 +15,22 @@
             <button id="btn-iniciar" class="btn-primary">INICIAR TORNEO YA!</button>
         </div>
 
+        <!-- [AM] Sección para configurar la pregunta que se muestra al comer manzana -->
+        <div class="pregunta-section">
+            <h2>❓ Pregunta de la Manzana</h2>
+            <label for="txt-pregunta">Pregunta:</label>
+            <input type="text" id="txt-pregunta" placeholder="Ej: ¿Cuánto es 5 + 3?">
+
+            <label for="txt-respuesta">Respuesta correcta:</label>
+            <input type="text" id="txt-respuesta" placeholder="Ej: 8">
+
+            <label for="txt-tiempo-limite">Tiempo mínimo para responder (segundos):</label>
+            <input type="number" id="txt-tiempo-limite" min="1" value="5">
+
+            <button id="btn-actualizar-pregunta" class="btn-primary">Actualizar Pregunta</button>
+            <p id="lbl-pregunta-estado"></p>
+        </div>
+
         <div class="lobby-section">
             <h2>👥 Alumnos en el Lobby</h2>
             <ul id="lista-lobby"></ul>
@@ -43,6 +59,13 @@
         const btnIniciar = document.getElementById('btn-iniciar');
         const cuerpoTabla = document.getElementById('cuerpo-tabla');
 
+        // [AM] Elementos del formulario de pregunta
+        const txtPregunta = document.getElementById('txt-pregunta');
+        const txtRespuesta = document.getElementById('txt-respuesta');
+        const txtTiempoLimite = document.getElementById('txt-tiempo-limite');
+        const btnActualizarPregunta = document.getElementById('btn-actualizar-pregunta');
+        const lblPreguntaEstado = document.getElementById('lbl-pregunta-estado');
+
         // Pestaña de pruebas para verificar si el script vive
         console.log("El script del Admin cargo correctamente en el navegador.");
 
@@ -54,6 +77,28 @@
             });
         } else {
             alert("Error: No se encontró el botón con ID 'btn-iniciar' en el HTML.");
+        }
+
+        // [AM] Al hacer click, mandamos la nueva pregunta al servidor,
+        // que la reenvía a todos los jugadores conectados.
+        if (btnActualizarPregunta) {
+            btnActualizarPregunta.addEventListener('click', () => {
+                const pregunta = txtPregunta.value.trim();
+                const respuesta = txtRespuesta.value.trim();
+                const tiempoLimite = Number(txtTiempoLimite.value) || 5;
+
+                if (pregunta === "" || respuesta === "") {
+                    alert("Debes escribir la pregunta y la respuesta correcta.");
+                    return;
+                }
+
+                socket.emit('admin_set_pregunta', { texto: pregunta, respuesta: respuesta, tiempoLimite: tiempoLimite });
+
+                if (lblPreguntaEstado) {
+                    lblPreguntaEstado.textContent = "✅ Pregunta actualizada y enviada a todos los jugadores.";
+                    lblPreguntaEstado.style.color = "#2ea44f";
+                }
+            });
         }
 
         socket.on('actualizar_ranking', (ranking) => {

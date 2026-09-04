@@ -32,12 +32,24 @@ db.query(`
     }
 });
 
-let jugadores = {}; 
+let jugadores = {};
+
+// [AM] Pregunta que se muestra cada vez que alguien come una manzana.
+// El admin la actualiza desde admin.html vía 'admin_set_pregunta'.
+let preguntaActual = {
+    texto: "¿Cuánto es 2 + 2?",
+    respuesta: "4",
+    tiempoLimite: 5 // segundos
+};
 
 app.use(express.static(path.join(__dirname, 'public')));
 
 io.on('connection', (socket) => {
     console.log(`🔌 Nuevo dispositivo conectado: ${socket.id}`);
+
+    // [AM] Le mandamos la pregunta vigente apenas se conecta,
+    // así el cliente ya la tiene lista antes de que alguien coma manzana.
+    socket.emit('pregunta_actualizada', preguntaActual);
 
     socket.on('unirse_lobby', async (username) => {
         jugadores[socket.id] = { username: username, puntos: 0, vivo: true };
@@ -94,9 +106,25 @@ io.on('connection', (socket) => {
             jugadores[id].puntos = 0;
             jugadores[id].vivo = true;
         }
-        io.emit('start_juego'); 
+        io.emit('start_juego');
         enviarRankingActualizado();
     });
+
+    // [AM] El admin define/actualiza la pregunta de la ronda y se
+    // transmite a todos los jugadores conectados en tiempo real.
+    socket.on('admin_set_pregunta', (data) => {
+        if (!data || typeof data.texto !== 'string' || typeof data.respuesta !== 'string') return;
+
+        preguntaActual = {
+            texto: data.texto.trim(),
+            respuesta: data.respuesta.trim(),
+            tiempoLimite: Number(data.tiempoLimite) > 0 ? Number(data.tiempoLimite) : 5
+        };
+
+        console.log(`❓ Pregunta actualizada por el admin: "${preguntaActual.texto}" (límite ${preguntaActual.tiempoLimite}s)`);
+        io.emit('pregunta_actualizada', preguntaActual);
+    });
+
     socket.on('obtener_historial_bd', async () => {
         try {
             const resultado = await db.query(`SELECT username, max_puntaje FROM ranking ORDER BY max_puntaje DESC LIMIT 10`);
