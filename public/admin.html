@@ -15,9 +15,9 @@
             <button id="btn-iniciar" class="btn-primary">INICIAR TORNEO YA!</button>
         </div>
 
-        <!-- [AM] Sección para configurar la pregunta que se muestra al comer manzana -->
+        <!-- [AM] Sección para agregar preguntas una por una -->
         <div class="pregunta-section">
-            <h2>❓ Pregunta de la Manzana</h2>
+            <h2>❓ Agregar una pregunta</h2>
             <label for="txt-pregunta">Pregunta:</label>
             <input type="text" id="txt-pregunta" placeholder="Ej: ¿Cuánto es 5 + 3?">
 
@@ -27,8 +27,31 @@
             <label for="txt-tiempo-limite">Tiempo mínimo para responder (segundos):</label>
             <input type="number" id="txt-tiempo-limite" min="1" value="5">
 
-            <button id="btn-actualizar-pregunta" class="btn-primary">Actualizar Pregunta</button>
+            <button id="btn-agregar-pregunta" class="btn-primary">Agregar Pregunta</button>
             <p id="lbl-pregunta-estado"></p>
+        </div>
+
+        <!-- [AM] Sección para agregar MUCHAS preguntas de un jalón -->
+        <div class="pregunta-section">
+            <h2>📋 Agregar varias preguntas de una vez</h2>
+            <p style="font-size: 13px; color: #8b949e;">
+                Una pregunta por línea, con este formato:<br>
+                <code>pregunta | respuesta | tiempo_en_segundos(opcional)</code><br>
+                Ejemplo:<br>
+                <code>¿Capital de Costa Rica? | San José | 5</code><br>
+                <code>¿Cuánto es 7 x 6? | 42</code> (si omites el tiempo, usa 5s)
+            </p>
+            <textarea id="txt-preguntas-bulk" rows="6" style="width: 100%; box-sizing: border-box; background-color:#0d1117; color:white; border:1px solid #30363d; border-radius:5px; padding:10px;" placeholder="¿Capital de Costa Rica? | San José | 5
+¿Cuánto es 7 x 6? | 42"></textarea>
+            <button id="btn-agregar-bulk" class="btn-primary" style="margin-top: 10px;">Agregar todas</button>
+            <p id="lbl-bulk-estado"></p>
+        </div>
+
+        <!-- [AM] Lista de preguntas actualmente cargadas, con opción de borrar -->
+        <div class="pregunta-section">
+            <h2>📝 Preguntas cargadas (<span id="contador-preguntas">0</span>)</h2>
+            <ul id="lista-preguntas-admin" style="list-style: none; padding: 0; max-height: 250px; overflow-y: auto;"></ul>
+            <button id="btn-vaciar-preguntas" style="background-color:#da3633; margin-top:10px;">Vaciar todas</button>
         </div>
 
         <div class="lobby-section">
@@ -59,30 +82,37 @@
         const btnIniciar = document.getElementById('btn-iniciar');
         const cuerpoTabla = document.getElementById('cuerpo-tabla');
 
-        // [AM] Elementos del formulario de pregunta
+        // [AM] Elementos del formulario de una pregunta
         const txtPregunta = document.getElementById('txt-pregunta');
         const txtRespuesta = document.getElementById('txt-respuesta');
         const txtTiempoLimite = document.getElementById('txt-tiempo-limite');
-        const btnActualizarPregunta = document.getElementById('btn-actualizar-pregunta');
+        const btnAgregarPregunta = document.getElementById('btn-agregar-pregunta');
         const lblPreguntaEstado = document.getElementById('lbl-pregunta-estado');
 
-        // Pestaña de pruebas para verificar si el script vive
+        // [AM] Elementos de la carga masiva
+        const txtPreguntasBulk = document.getElementById('txt-preguntas-bulk');
+        const btnAgregarBulk = document.getElementById('btn-agregar-bulk');
+        const lblBulkEstado = document.getElementById('lbl-bulk-estado');
+
+        // [AM] Elementos de la lista de preguntas cargadas
+        const listaPreguntasAdmin = document.getElementById('lista-preguntas-admin');
+        const contadorPreguntas = document.getElementById('contador-preguntas');
+        const btnVaciarPreguntas = document.getElementById('btn-vaciar-preguntas');
+
         console.log("El script del Admin cargo correctamente en el navegador.");
 
         if (btnIniciar) {
             btnIniciar.addEventListener('click', () => {
                 alert("¡Diste click al botón azul! Enviando señal al servidor...");
-                
-                socket.emit('admin_iniciar_torneo'); 
+                socket.emit('admin_iniciar_torneo');
             });
         } else {
             alert("Error: No se encontró el botón con ID 'btn-iniciar' en el HTML.");
         }
 
-        // [AM] Al hacer click, mandamos la nueva pregunta al servidor,
-        // que la reenvía a todos los jugadores conectados.
-        if (btnActualizarPregunta) {
-            btnActualizarPregunta.addEventListener('click', () => {
+        // [AM] Agregar una sola pregunta
+        if (btnAgregarPregunta) {
+            btnAgregarPregunta.addEventListener('click', () => {
                 const pregunta = txtPregunta.value.trim();
                 const respuesta = txtRespuesta.value.trim();
                 const tiempoLimite = Number(txtTiempoLimite.value) || 5;
@@ -92,14 +122,88 @@
                     return;
                 }
 
-                socket.emit('admin_set_pregunta', { texto: pregunta, respuesta: respuesta, tiempoLimite: tiempoLimite });
+                socket.emit('admin_agregar_pregunta', { texto: pregunta, respuesta: respuesta, tiempoLimite: tiempoLimite });
+
+                txtPregunta.value = "";
+                txtRespuesta.value = "";
 
                 if (lblPreguntaEstado) {
-                    lblPreguntaEstado.textContent = "✅ Pregunta actualizada y enviada a todos los jugadores.";
+                    lblPreguntaEstado.textContent = "✅ Pregunta agregada.";
                     lblPreguntaEstado.style.color = "#2ea44f";
                 }
             });
         }
+
+        // [AM] Agregar varias preguntas pegadas en el textarea, formato:
+        // pregunta | respuesta | tiempo(opcional)
+        if (btnAgregarBulk) {
+            btnAgregarBulk.addEventListener('click', () => {
+                const texto = txtPreguntasBulk.value.trim();
+                if (texto === "") {
+                    alert("Pega al menos una pregunta en el cuadro de texto.");
+                    return;
+                }
+
+                const lineas = texto.split('\n').map(l => l.trim()).filter(l => l !== "");
+                const preguntasParseadas = [];
+
+                lineas.forEach(linea => {
+                    const partes = linea.split('|').map(p => p.trim());
+                    if (partes.length >= 2 && partes[0] !== "" && partes[1] !== "") {
+                        preguntasParseadas.push({
+                            texto: partes[0],
+                            respuesta: partes[1],
+                            tiempoLimite: partes[2] ? Number(partes[2]) : 5
+                        });
+                    }
+                });
+
+                if (preguntasParseadas.length === 0) {
+                    alert("No se pudo leer ninguna pregunta válida. Revisa el formato: pregunta | respuesta | tiempo");
+                    return;
+                }
+
+                socket.emit('admin_agregar_preguntas_bulk', preguntasParseadas);
+                txtPreguntasBulk.value = "";
+
+                if (lblBulkEstado) {
+                    lblBulkEstado.textContent = `✅ ${preguntasParseadas.length} preguntas agregadas.`;
+                    lblBulkEstado.style.color = "#2ea44f";
+                }
+            });
+        }
+
+        // [AM] Vaciar toda la lista
+        if (btnVaciarPreguntas) {
+            btnVaciarPreguntas.addEventListener('click', () => {
+                if (confirm("¿Seguro que quieres borrar TODAS las preguntas cargadas?")) {
+                    socket.emit('admin_vaciar_preguntas');
+                }
+            });
+        }
+
+        // [AM] Repinta la lista de preguntas cargadas cada vez que el server la actualiza
+        socket.on('lista_preguntas_actualizada', (preguntas) => {
+            if (!listaPreguntasAdmin) return;
+            listaPreguntasAdmin.innerHTML = '';
+            contadorPreguntas.textContent = preguntas.length;
+
+            preguntas.forEach((p, indice) => {
+                const li = document.createElement('li');
+                li.style.cssText = "display:flex; justify-content:space-between; align-items:center; background:#0d1117; border:1px solid #30363d; border-radius:5px; padding:8px 10px; margin-bottom:6px;";
+                li.innerHTML = `
+                    <span style="font-size:14px;"><strong>${p.texto}</strong> → ${p.respuesta} (${p.tiempoLimite}s)</span>
+                `;
+                const btnBorrar = document.createElement('button');
+                btnBorrar.textContent = "Borrar";
+                btnBorrar.style.cssText = "background-color:#da3633; padding:5px 10px; font-size:12px;";
+                btnBorrar.addEventListener('click', () => {
+                    socket.emit('admin_eliminar_pregunta', indice);
+                });
+                li.appendChild(btnBorrar);
+                listaPreguntasAdmin.appendChild(li);
+            });
+        });
 
         socket.on('actualizar_ranking', (ranking) => {
             cuerpoTabla.innerHTML = '';

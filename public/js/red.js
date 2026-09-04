@@ -61,14 +61,14 @@ socket.on('actualizar_ranking', (ranking) => {
     }
 });
 
-// [AM] Guardamos la pregunta vigente (enviada por el server / el admin) en una
-// variable global para que juego.js la use cuando alguien coma una manzana.
-window.PREGUNTA_ACTUAL = { texto: "Cargando pregunta...", respuesta: "", tiempoLimite: 5 };
+// [AM] Ahora guardamos una LISTA de preguntas (no una sola). juego.js elige
+// una al azar de este arreglo cada vez que alguien come una manzana.
+window.LISTA_PREGUNTAS = [];
 
-socket.on('pregunta_actualizada', (data) => {
-    if (data && typeof data.texto === 'string') {
-        window.PREGUNTA_ACTUAL = data;
-        console.log(`❓ Nueva pregunta recibida: "${data.texto}" (límite ${data.tiempoLimite}s)`);
+socket.on('lista_preguntas_actualizada', (preguntas) => {
+    if (Array.isArray(preguntas)) {
+        window.LISTA_PREGUNTAS = preguntas;
+        console.log(`❓ Lista de preguntas actualizada: ${preguntas.length} preguntas disponibles.`);
     }
 });
 

@@ -34,22 +34,35 @@ db.query(`
 
 let jugadores = {};
 
-// [AM] Pregunta que se muestra cada vez que alguien come una manzana.
-// El admin la actualiza desde admin.html vía 'admin_set_pregunta'.
-let preguntaActual = {
-    texto: "¿Cuánto es 2 + 2?",
-    respuesta: "4",
-    tiempoLimite: 5 // segundos
-};
+// [AM] Ahora manejamos una LISTA de preguntas en vez de una sola.
+// El juego elige una al azar de esta lista cada vez que alguien come manzana.
+let preguntas = [];
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+function broadcastPreguntas() {
+    io.emit('lista_preguntas_actualizada', preguntas);
+}
+
+function preguntaValida(data) {
+    return data && typeof data.texto === 'string' && data.texto.trim() !== ''
+        && typeof data.respuesta === 'string' && data.respuesta.trim() !== '';
+}
+
+function normalizarPregunta(data) {
+    return {
+        texto: data.texto.trim(),
+        respuesta: data.respuesta.trim(),
+        tiempoLimite: Number(data.tiempoLimite) > 0 ? Number(data.tiempoLimite) : 5
+    };
+}
 
 io.on('connection', (socket) => {
     console.log(`🔌 Nuevo dispositivo conectado: ${socket.id}`);
 
-    // [AM] Le mandamos la pregunta vigente apenas se conecta,
-    // así el cliente ya la tiene lista antes de que alguien coma manzana.
-    socket.emit('pregunta_actualizada', preguntaActual);
+    // [AM] Le mandamos la lista de preguntas vigente apenas se conecta
+    // (jugador o admin), así ya la tiene lista antes de necesitarla.
+    socket.emit('lista_preguntas_actualizada', preguntas);
 
     socket.on('unirse_lobby', async (username) => {
         jugadores[socket.id] = { username: username, puntos: 0, vivo: true };
@@ -110,19 +123,34 @@ io.on('connection', (socket) => {
         enviarRankingActualizado();
     });
 
-    // [AM] El admin define/actualiza la pregunta de la ronda y se
-    // transmite a todos los jugadores conectados en tiempo real.
-    socket.on('admin_set_pregunta', (data) => {
-        if (!data || typeof data.texto !== 'string' || typeof data.respuesta !== 'string') return;
+    // [AM] Agregar UNA pregunta a la lista
+    socket.on('admin_agregar_pregunta', (data) => {
+        if (!preguntaValida(data)) return;
+        preguntas.push(normalizarPregunta(data));
+        console.log(`❓ Pregunta agregada (total: ${preguntas.length})`);
+        broadcastPreguntas();
+    });
 
-        preguntaActual = {
-            texto: data.texto.trim(),
-            respuesta: data.respuesta.trim(),
-            tiempoLimite: Number(data.tiempoLimite) > 0 ? Number(data.tiempoLimite) : 5
-        };
+    // [AM] Agregar VARIAS preguntas de una vez (carga masiva desde el admin)
+    socket.on('admin_agregar_preguntas_bulk', (listaData) => {
+        if (!Array.isArray(listaData)) return;
+        const nuevas = listaData.filter(preguntaValida).map(normalizarPregunta);
+        preguntas = preguntas.concat(nuevas);
+        console.log(`❓ ${nuevas.length} preguntas agregadas en bloque (total: ${preguntas.length})`);
+        broadcastPreguntas();
+    });
 
-        console.log(`❓ Pregunta actualizada por el admin: "${preguntaActual.texto}" (límite ${preguntaActual.tiempoLimite}s)`);
-        io.emit('pregunta_actualizada', preguntaActual);
+    // [AM] Eliminar una pregunta puntual por su índice en el arreglo
+    socket.on('admin_eliminar_pregunta', (indice) => {
+        if (typeof indice !== 'number' || indice < 0 || indice >= preguntas.length) return;
+        preguntas.splice(indice, 1);
+        broadcastPreguntas();
+    });
+
+    // [AM] Vaciar toda la lista de preguntas
+    socket.on('admin_vaciar_preguntas', () => {
+        preguntas = [];
+        broadcastPreguntas();
     });
 
     socket.on('obtener_historial_bd', async () => {

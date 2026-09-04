@@ -149,6 +149,34 @@ function pausarParaPregunta() {
 }
 
 // [AM] Muestra el modal, arranca la cuenta regresiva y espera la respuesta del jugador.
+// [AM] Guarda el índice de la última pregunta usada, para no repetirla seguido si hay más de una.
+let ultimaPreguntaIndice = -1;
+
+// [AM] Elige una pregunta al azar de window.LISTA_PREGUNTAS, evitando repetir la anterior.
+function elegirPreguntaAleatoria() {
+    const lista = window.LISTA_PREGUNTAS || [];
+
+    if (lista.length === 0) {
+        // [AM] Modo compatibilidad: si el admin no ha cargado preguntas, usamos una por defecto
+        // para que el juego no se rompa (siempre pide lo mismo hasta que carguen preguntas reales).
+        return { texto: "El admin aún no ha cargado preguntas. ¿Cuánto es 2 + 2?", respuesta: "4", tiempoLimite: 5 };
+    }
+
+    if (lista.length === 1) {
+        ultimaPreguntaIndice = 0;
+        return lista[0];
+    }
+
+    let indice;
+    do {
+        indice = Math.floor(Math.random() * lista.length);
+    } while (indice === ultimaPreguntaIndice);
+
+    ultimaPreguntaIndice = indice;
+    return lista[indice];
+}
+
+// [AM] Muestra el modal, arranca la cuenta regresiva y espera la respuesta del jugador.
 function mostrarModalPregunta() {
     const modal = document.getElementById('modal-pregunta');
     const txtPregunta = document.getElementById('txt-pregunta-modal');
@@ -163,7 +191,8 @@ function mostrarModalPregunta() {
         return;
     }
 
-    const pregunta = window.PREGUNTA_ACTUAL || { texto: '¿Sin pregunta configurada?', respuesta: '', tiempoLimite: 5 };
+    // [AM] Ahora elegimos la pregunta al azar de la lista en vez de usar una fija.
+    const pregunta = elegirPreguntaAleatoria();
     const tiempoLimiteSeg = Number(pregunta.tiempoLimite) > 0 ? Number(pregunta.tiempoLimite) : 5;
     const tiempoLimiteMs = tiempoLimiteSeg * 1000;
     let tiempoRestante = tiempoLimiteSeg;
