@@ -305,19 +305,42 @@ function resolverPregunta(acerto) {
 
 // [AM] Pantalla roja de penalización durante 3 segundos, luego reanuda el juego.
 function mostrarCastigo() {
-    if (ctx && canvas) {
-        ctx.fillStyle = 'rgba(255, 0, 0, 0.35)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '20px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('❌ Respuesta incorrecta', canvas.width / 2, canvas.height / 2 - 10);
-        ctx.fillText('Penalización: 3s', canvas.width / 2, canvas.height / 2 + 20);
+    let segundos = 3;
+
+    function actualizarTexto() {
+        if (ctx && canvas) {
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.35)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '20px Arial';
+            ctx.textAlign = 'center';
+
+            ctx.fillText(
+                '❌ Respuesta incorrecta',
+                canvas.width / 2,
+                canvas.height / 2 - 10
+            );
+
+            ctx.fillText(
+                `Penalización: ${segundos}s`,
+                canvas.width / 2,
+                canvas.height / 2 + 20
+            );
+        }
+
+        if (segundos > 1) {
+            segundos--;
+
+            setTimeout(actualizarTexto, 1000);
+        } else {
+            setTimeout(() => {
+                reanudarJuego();
+            }, 1000);
+        }
     }
 
-    setTimeout(() => {
-        reanudarJuego();
-    }, 3000);
+    actualizarTexto();
 }
 
 // [AM] Reanuda el bucle del juego si sigue vivo y no hay otro intervalo corriendo.
