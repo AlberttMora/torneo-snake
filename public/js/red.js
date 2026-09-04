@@ -12,17 +12,17 @@ const listaRanking = document.getElementById('lista-ranking');
 if (btnConectar) {
     btnConectar.addEventListener('click', () => {
         const nombre = txtUsername.value.trim();
-        
+
         if (nombre === "") {
             alert("Debes ponerte un nombre primero.");
             return;
         }
 
         socket.emit('unirse_lobby', nombre);
-        
+
         btnConectar.disabled = true;
         txtUsername.disabled = true;
-        
+
         if (lblEstado) {
             lblEstado.textContent = "Registrado correctamente, esperando a que el admin inicie el torneo... ⏳";
             lblEstado.style.color = "#58ff6d";
@@ -30,22 +30,44 @@ if (btnConectar) {
     });
 }
 
-socket.on('start_juego', () => {
-    console.log("Señal recibida, ocultando lobby y encendiendo canvas...");
-    
-    if (contenedorLobby) contenedorLobby.style.display = 'none';
-    if (contenedorJuego) contenedorJuego.style.display = 'block';
+socket.on('start_juego', (datos) => {
+
+    const tiempoMinutos = Number(datos?.tiempoMinutos) || 5;
+
+    // Convertimos minutos a segundos
+    window.tiempoLimiteJuego = tiempoMinutos * 60;
+
+    console.log(`⏱️ Tiempo del torneo: ${tiempoMinutos} minutos`);
+
+    if (contenedorLobby) {
+        contenedorLobby.style.display = 'none';
+    }
+
+    if (contenedorJuego) {
+        contenedorJuego.style.display = 'block';
+    }
 
     const btnVolver = document.getElementById('btn-volver-lobby');
-    if (btnVolver) btnVolver.style.display = 'none';
+
+    if (btnVolver) {
+        btnVolver.style.display = 'none';
+    }
 
     setTimeout(() => {
+
         if (typeof window.iniciarJuegoCulebrita === 'function') {
+
             window.iniciarJuegoCulebrita();
-            window.focus(); 
+            window.focus();
+
         } else {
-            console.error("Error: window.iniciarJuegoCulebrita no esta disponible.");
+
+            console.error(
+                "Error: window.iniciarJuegoCulebrita no esta disponible."
+            );
+
         }
+
     }, 50);
 });
 
@@ -73,11 +95,11 @@ socket.on('lista_preguntas_actualizada', (preguntas) => {
 });
 
 // 4. FUNCIONES ENLACE (Llamadas desde tu juego.js)
-window.notificarManzanaComida = function(nuevosPuntos) {
+window.notificarManzanaComida = function (nuevosPuntos) {
     socket.emit('actualizar_puntos', nuevosPuntos);
 };
 
-window.notificarMuerteJugador = function() {
+window.notificarMuerteJugador = function () {
     socket.emit('jugador_muerto');
 };
 

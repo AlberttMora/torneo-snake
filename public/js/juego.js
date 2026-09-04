@@ -1,15 +1,48 @@
 const canvas = document.getElementById('canvas-juego');
-const ctx = canvas ? canvas.getContext('2d') : null; 
+const ctx = canvas ? canvas.getContext('2d') : null;
 
 const TAMANO_BLOQUE = 20;
-let TOTAL_BLOQUES = 20; 
+let TOTAL_BLOQUES = 20;
+
+let tiempoLimiteJuegoSegundos = 300;
+let tiempoJuegoRestante = 300;
+let timerJuego = null;
+
+function iniciarTimerJuego() {
+
+    clearInterval(timerJuego);
+
+    tiempoJuegoRestante = tiempoLimiteJuegoSegundos;
+
+    timerJuego = setInterval(() => {
+
+        if (!juegoCorriendo) {
+            clearInterval(timerJuego);
+            timerJuego = null;
+            return;
+        }
+
+        tiempoJuegoRestante--;
+
+        console.log(`⏱️ Tiempo restante: ${tiempoJuegoRestante}s`);
+
+        if (tiempoJuegoRestante <= 0) {
+
+            clearInterval(timerJuego);
+            timerJuego = null;
+
+            terminarJuego();
+        }
+
+    }, 1000);
+}
 
 if (canvas) {
     TOTAL_BLOQUES = canvas.width / TAMANO_BLOQUE;
 }
 
 let culebrita = [];
-let direccion = { x: 1, y: 0 }; 
+let direccion = { x: 1, y: 0 };
 
 // [AM] FIX CRÍTICO: ultimaDireccion guarda la dirección que se usó en el ÚLTIMO tick real.
 // Los guards del teclado/touch deben comparar contra ésta, NO contra "direccion".
@@ -34,32 +67,53 @@ let respuestaIntervaloId = null;
 let toqueIniciX = 0;
 let toqueIniciY = 0;
 
-window.iniciarJuegoCulebrita = function() {
+window.iniciarJuegoCulebrita = function () {
+
+    mostrarAvisoInicio();
+
     if (!canvas) return;
 
-    puntos = 0;
-    culebrita = [{ x: 10, y: 10 }];
-    direccion = { x: 1, y: 0 }; // Arranca hacia la derecha
-    ultimaDireccion = { x: 1, y: 0 }; // [AM] FIX: resetear junto con direccion
-    juegoCorriendo = true;
-    esperandoRespuesta = false; // [AM] Por si quedó en true de una ronda anterior
+    // Tomar el tiempo enviado por el Admin
+    tiempoLimiteJuegoSegundos =
+        window.tiempoLimiteJuego || 300;
 
-    // [AM] Si el modal de pregunta quedó visible de una ronda pasada, lo ocultamos
-    const modalPregunta = document.getElementById('modal-pregunta');
-    if (modalPregunta) modalPregunta.style.display = 'none';
+    tiempoJuegoRestante = tiempoLimiteJuegoSegundos;
+
+    puntos = 0;
+
+    culebrita = [{ x: 10, y: 10 }];
+
+    direccion = { x: 1, y: 0 };
+    ultimaDireccion = { x: 1, y: 0 };
+
+    juegoCorriendo = true;
+    esperandoRespuesta = false;
+
+    const modalPregunta =
+        document.getElementById('modal-pregunta');
+
+    if (modalPregunta) {
+        modalPregunta.style.display = 'none';
+    }
 
     generarManzana();
-    configurarControlesTeclado();
-    configurarControlesTactiles(); // 🔥 Activamos el lector del celular
 
-    // [AM] FIX: Limpiamos el intervalo anterior y lo nulleamos antes de crear uno nuevo
-    // Esto evita que queden dos buclePrincipal corriendo al mismo tiempo entre rondas
+    configurarControlesTeclado();
+    configurarControlesTactiles();
+
     if (juegoIntervalo) {
         clearInterval(juegoIntervalo);
         juegoIntervalo = null;
     }
-    juegoIntervalo = setInterval(buclePrincipal, 120);
-    
+
+    juegoIntervalo = setInterval(
+        buclePrincipal,
+        120
+    );
+
+    // Iniciar contador del torneo
+    iniciarTimerJuego();
+
     dibujarTodo();
 };
 
@@ -89,10 +143,10 @@ function buclePrincipal() {
 function moverCulebrita() {
     ultimaDireccion = { x: direccion.x, y: direccion.y };
     const cabeza = { x: culebrita[0].x + direccion.x, y: culebrita[0].y + direccion.y };
-    
+
     // Log para ver a dónde intenta ir la culebrita
     console.log(`DEBUG: Moviendo a (${cabeza.x}, ${cabeza.y}) con dir (${direccion.x}, ${direccion.y})`);
-    
+
     culebrita.unshift(cabeza);
 }
 
@@ -360,7 +414,7 @@ function manejarTeclado(evento) {
     // [AM] FIX CRÍTICO: Comparamos contra ultimaDireccion (el movimiento real del
     // último tick), NO contra direccion (que ya pudo haber cambiado este tick).
     // Esto evita que dos teclas rápidas en el mismo tick anulen el guard anti-reversa.
-    switch(evento.key) {
+    switch (evento.key) {
         case 'ArrowUp':
             if (ultimaDireccion.y !== 1) direccion = { x: 0, y: -1 };
             break;
@@ -395,7 +449,7 @@ function manejarTouchEnd(e) {
     const difY = toqueFinY - toqueIniciY;
 
     // Definimos un mínimo de píxeles para que no gire por error (sensibilidad)
-    const umbralSensibilidad = 30; 
+    const umbralSensibilidad = 30;
 
     if (Math.abs(difX) > Math.abs(difY)) {
         // El movimiento fue mayormente HORIZONTAL (Izquierda o Derecha)
@@ -456,17 +510,27 @@ function dibujarTodo() {
     });
 }
 
+function mostrarAvisoInicio() {
+    alert(
+        "🐍 ¡El torneo esta por comenzar!\n\n" +
+        "Prepárate para jugar.\n" +
+        "Come las manzanas y responde correctamente las preguntas.\n\n" +
+        "⚠️ Si respondes incorrectamente, tendras una penalizacion de 3 segundos.\n\n" +
+        "¡Mucha suerte!"
+    );
+}
+
 function terminarJuego() {
     clearInterval(juegoIntervalo);
     juegoIntervalo = null; // [AM] FIX: nulleamos para que iniciarJuegoCulebrita
-                           // sepa que no hay intervalo activo en la próxima ronda
+    // sepa que no hay intervalo activo en la próxima ronda
     juegoCorriendo = false;
     esperandoRespuesta = false; // [AM] Por si moría durante una pregunta pendiente
 
     // [AM] Si el modal seguía abierto (poco probable pero por seguridad), lo cerramos
     const modalPregunta = document.getElementById('modal-pregunta');
     if (modalPregunta) modalPregunta.style.display = 'none';
-    
+
     if (ctx && canvas) {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -474,7 +538,7 @@ function terminarJuego() {
         ctx.font = '30px Arial';
         ctx.textAlign = 'center';
         ctx.fillText('¡GAME OVER!', canvas.width / 2, canvas.height / 2 - 10);
-        
+
         ctx.fillStyle = '#ffffff';
         ctx.font = '16px Arial';
         ctx.fillText(`Puntaje final: ${puntos} pts`, canvas.width / 2, canvas.height / 2 + 30);

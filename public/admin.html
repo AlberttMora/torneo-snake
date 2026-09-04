@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Administración - Torneo Snake</title>
     <link rel="stylesheet" href="/css/styles.css">
 </head>
+
 <body class="pagina-admin">
     <div class="container">
         <h1> PANEL DE CONTROL (ADMIN)</h1>
         <hr>
-        
+
         <div class="admin-actions">
             <button id="btn-iniciar" class="btn-primary">INICIAR TORNEO YA!</button>
         </div>
@@ -41,7 +43,9 @@
                 <code>¿Capital de Costa Rica? | San José | 5</code><br>
                 <code>¿Cuánto es 7 x 6? | 42</code> (si omites el tiempo, usa 5s)
             </p>
-            <textarea id="txt-preguntas-bulk" rows="6" style="width: 100%; box-sizing: border-box; background-color:#0d1117; color:white; border:1px solid #30363d; border-radius:5px; padding:10px;" placeholder="¿Capital de Costa Rica? | San José | 5
+            <textarea id="txt-preguntas-bulk" rows="6"
+                style="width: 100%; box-sizing: border-box; background-color:#0d1117; color:white; border:1px solid #30363d; border-radius:5px; padding:10px;"
+                placeholder="¿Capital de Costa Rica? | San José | 5
 ¿Cuánto es 7 x 6? | 42"></textarea>
             <button id="btn-agregar-bulk" class="btn-primary" style="margin-top: 10px;">Agregar todas</button>
             <p id="lbl-bulk-estado"></p>
@@ -53,14 +57,18 @@
             <p style="font-size: 13px; color: #8b949e;">
                 Pega bloques con este formato, separados por una línea en blanco entre pregunta y pregunta:
             </p>
-            <pre style="font-size: 12px; color: #8b949e; background:#0d1117; padding:10px; border-radius:5px; white-space:pre-wrap;">1. ¿Que son los valores?
+            <pre
+                style="font-size: 12px; color: #8b949e; background:#0d1117; padding:10px; border-radius:5px; white-space:pre-wrap;">1. ¿Que son los valores?
 A) Reglas establecidas unicamente por los gobiernos
 B) Principios morales que orientan la conducta
 C) Conocimientos cientificos sobre la naturaleza
 D) Emociones momentaneas de una persona
 Correcta: B</pre>
-            <textarea id="txt-preguntas-opcion-multiple" rows="10" style="width: 100%; box-sizing: border-box; background-color:#0d1117; color:white; border:1px solid #30363d; border-radius:5px; padding:10px;" placeholder="Pega aquí el bloque completo de preguntas..."></textarea>
-            <label for="txt-tiempo-om" style="display:block; margin-top:10px;">Tiempo para responder cada una (segundos):</label>
+            <textarea id="txt-preguntas-opcion-multiple" rows="10"
+                style="width: 100%; box-sizing: border-box; background-color:#0d1117; color:white; border:1px solid #30363d; border-radius:5px; padding:10px;"
+                placeholder="Pega aquí el bloque completo de preguntas..."></textarea>
+            <label for="txt-tiempo-om" style="display:block; margin-top:10px;">Tiempo para responder cada una
+                (segundos):</label>
             <input type="number" id="txt-tiempo-om" min="1" value="8" style="width: 120px;">
             <button id="btn-agregar-om" class="btn-primary" style="margin-top: 10px;">Agregar todas</button>
             <p id="lbl-om-estado"></p>
@@ -69,9 +77,14 @@ Correcta: B</pre>
         <!-- [AM] Lista de preguntas actualmente cargadas, con opción de borrar -->
         <div class="pregunta-section">
             <h2>📝 Preguntas cargadas (<span id="contador-preguntas">0</span>)</h2>
-            <ul id="lista-preguntas-admin" style="list-style: none; padding: 0; max-height: 250px; overflow-y: auto;"></ul>
+            <ul id="lista-preguntas-admin" style="list-style: none; padding: 0; max-height: 250px; overflow-y: auto;">
+            </ul>
             <button id="btn-vaciar-preguntas" style="background-color:#da3633; margin-top:10px;">Vaciar todas</button>
         </div>
+
+        <label for="tiempo-juego">Tiempo limite del juego (minutos):</label>
+
+        <input type="number" id="tiempo-juego" min="1" max="60" value="5">
 
         <div class="lobby-section">
             <h2>👥 Alumnos en el Lobby</h2>
@@ -96,242 +109,257 @@ Correcta: B</pre>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const socket = io();
-        const btnIniciar = document.getElementById('btn-iniciar');
-        const cuerpoTabla = document.getElementById('cuerpo-tabla');
+        document.addEventListener('DOMContentLoaded', () => {
+            const socket = io();
+            const btnIniciar = document.getElementById('btn-iniciar');
+            const cuerpoTabla = document.getElementById('cuerpo-tabla');
 
-        // [AM] Elementos del formulario de una pregunta
-        const txtPregunta = document.getElementById('txt-pregunta');
-        const txtRespuesta = document.getElementById('txt-respuesta');
-        const txtTiempoLimite = document.getElementById('txt-tiempo-limite');
-        const btnAgregarPregunta = document.getElementById('btn-agregar-pregunta');
-        const lblPreguntaEstado = document.getElementById('lbl-pregunta-estado');
+            // [AM] Elementos del formulario de una pregunta
+            const txtPregunta = document.getElementById('txt-pregunta');
+            const txtRespuesta = document.getElementById('txt-respuesta');
+            const txtTiempoLimite = document.getElementById('txt-tiempo-limite');
+            const btnAgregarPregunta = document.getElementById('btn-agregar-pregunta');
+            const lblPreguntaEstado = document.getElementById('lbl-pregunta-estado');
 
-        // [AM] Elementos de la carga masiva de texto libre
-        const txtPreguntasBulk = document.getElementById('txt-preguntas-bulk');
-        const btnAgregarBulk = document.getElementById('btn-agregar-bulk');
-        const lblBulkEstado = document.getElementById('lbl-bulk-estado');
+            // [AM] Elementos de la carga masiva de texto libre
+            const txtPreguntasBulk = document.getElementById('txt-preguntas-bulk');
+            const btnAgregarBulk = document.getElementById('btn-agregar-bulk');
+            const lblBulkEstado = document.getElementById('lbl-bulk-estado');
 
-        // [AM] Elementos de la carga de opción múltiple
-        const txtPreguntasOM = document.getElementById('txt-preguntas-opcion-multiple');
-        const txtTiempoOM = document.getElementById('txt-tiempo-om');
-        const btnAgregarOM = document.getElementById('btn-agregar-om');
-        const lblOMEstado = document.getElementById('lbl-om-estado');
+            // [AM] Elementos de la carga de opción múltiple
+            const txtPreguntasOM = document.getElementById('txt-preguntas-opcion-multiple');
+            const txtTiempoOM = document.getElementById('txt-tiempo-om');
+            const btnAgregarOM = document.getElementById('btn-agregar-om');
+            const lblOMEstado = document.getElementById('lbl-om-estado');
 
-        // [AM] Elementos de la lista de preguntas cargadas
-        const listaPreguntasAdmin = document.getElementById('lista-preguntas-admin');
-        const contadorPreguntas = document.getElementById('contador-preguntas');
-        const btnVaciarPreguntas = document.getElementById('btn-vaciar-preguntas');
+            // [AM] Elementos de la lista de preguntas cargadas
+            const listaPreguntasAdmin = document.getElementById('lista-preguntas-admin');
+            const contadorPreguntas = document.getElementById('contador-preguntas');
+            const btnVaciarPreguntas = document.getElementById('btn-vaciar-preguntas');
 
-        console.log("El script del Admin cargo correctamente en el navegador.");
+            console.log("El script del Admin cargo correctamente en el navegador.");
 
-        if (btnIniciar) {
-            btnIniciar.addEventListener('click', () => {
-                alert("¡Diste click al botón azul! Enviando señal al servidor...");
-                socket.emit('admin_iniciar_torneo');
-            });
-        } else {
-            alert("Error: No se encontró el botón con ID 'btn-iniciar' en el HTML.");
-        }
+            if (btnIniciar) {
+                btnIniciar.addEventListener('click', () => {
 
-        // [AM] Agregar una sola pregunta de texto libre
-        if (btnAgregarPregunta) {
-            btnAgregarPregunta.addEventListener('click', () => {
-                const pregunta = txtPregunta.value.trim();
-                const respuesta = txtRespuesta.value.trim();
-                const tiempoLimite = Number(txtTiempoLimite.value) || 5;
+                    const tiempoMinutos = Number(
+                        document.getElementById('tiempo-juego').value
+                    );
 
-                if (pregunta === "" || respuesta === "") {
-                    alert("Debes escribir la pregunta y la respuesta correcta.");
-                    return;
-                }
+                    if (tiempoMinutos < 1 || tiempoMinutos > 60) {
+                        alert("El tiempo debe estar entre 1 y 60 minutos.");
+                        return;
+                    }
 
-                socket.emit('admin_agregar_pregunta', { texto: pregunta, respuesta: respuesta, tiempoLimite: tiempoLimite });
+                    alert(
+                        `¡Torneo iniciado!\n\n` +
+                        `Tiempo del juego: ${tiempoMinutos} minutos`
+                    );
 
-                txtPregunta.value = "";
-                txtRespuesta.value = "";
+                    socket.emit('admin_iniciar_torneo', {
+                        tiempoMinutos: tiempoMinutos
+                    });
+                });
+            }
 
-                if (lblPreguntaEstado) {
-                    lblPreguntaEstado.textContent = "✅ Pregunta agregada.";
-                    lblPreguntaEstado.style.color = "#2ea44f";
-                }
-            });
-        }
+            // [AM] Agregar una sola pregunta de texto libre
+            if (btnAgregarPregunta) {
+                btnAgregarPregunta.addEventListener('click', () => {
+                    const pregunta = txtPregunta.value.trim();
+                    const respuesta = txtRespuesta.value.trim();
+                    const tiempoLimite = Number(txtTiempoLimite.value) || 5;
 
-        // [AM] Agregar varias preguntas de texto libre pegadas en el textarea, formato:
-        // pregunta | respuesta | tiempo(opcional)
-        if (btnAgregarBulk) {
-            btnAgregarBulk.addEventListener('click', () => {
-                const texto = txtPreguntasBulk.value.trim();
-                if (texto === "") {
-                    alert("Pega al menos una pregunta en el cuadro de texto.");
-                    return;
-                }
+                    if (pregunta === "" || respuesta === "") {
+                        alert("Debes escribir la pregunta y la respuesta correcta.");
+                        return;
+                    }
 
-                const lineas = texto.split('\n').map(l => l.trim()).filter(l => l !== "");
-                const preguntasParseadas = [];
+                    socket.emit('admin_agregar_pregunta', { texto: pregunta, respuesta: respuesta, tiempoLimite: tiempoLimite });
 
-                lineas.forEach(linea => {
-                    const partes = linea.split('|').map(p => p.trim());
-                    if (partes.length >= 2 && partes[0] !== "" && partes[1] !== "") {
-                        preguntasParseadas.push({
-                            texto: partes[0],
-                            respuesta: partes[1],
-                            tiempoLimite: partes[2] ? Number(partes[2]) : 5
+                    txtPregunta.value = "";
+                    txtRespuesta.value = "";
+
+                    if (lblPreguntaEstado) {
+                        lblPreguntaEstado.textContent = "✅ Pregunta agregada.";
+                        lblPreguntaEstado.style.color = "#2ea44f";
+                    }
+                });
+            }
+
+            // [AM] Agregar varias preguntas de texto libre pegadas en el textarea, formato:
+            // pregunta | respuesta | tiempo(opcional)
+            if (btnAgregarBulk) {
+                btnAgregarBulk.addEventListener('click', () => {
+                    const texto = txtPreguntasBulk.value.trim();
+                    if (texto === "") {
+                        alert("Pega al menos una pregunta en el cuadro de texto.");
+                        return;
+                    }
+
+                    const lineas = texto.split('\n').map(l => l.trim()).filter(l => l !== "");
+                    const preguntasParseadas = [];
+
+                    lineas.forEach(linea => {
+                        const partes = linea.split('|').map(p => p.trim());
+                        if (partes.length >= 2 && partes[0] !== "" && partes[1] !== "") {
+                            preguntasParseadas.push({
+                                texto: partes[0],
+                                respuesta: partes[1],
+                                tiempoLimite: partes[2] ? Number(partes[2]) : 5
+                            });
+                        }
+                    });
+
+                    if (preguntasParseadas.length === 0) {
+                        alert("No se pudo leer ninguna pregunta válida. Revisa el formato: pregunta | respuesta | tiempo");
+                        return;
+                    }
+
+                    socket.emit('admin_agregar_preguntas_bulk', preguntasParseadas);
+                    txtPreguntasBulk.value = "";
+
+                    if (lblBulkEstado) {
+                        lblBulkEstado.textContent = `✅ ${preguntasParseadas.length} preguntas agregadas.`;
+                        lblBulkEstado.style.color = "#2ea44f";
+                    }
+                });
+            }
+
+            // [AM] Parsea bloques tipo:
+            // 1. ¿Pregunta?
+            // A) opcion
+            // B) opcion
+            // C) opcion
+            // D) opcion
+            // Correcta: B
+            function parsearPreguntasOpcionMultiple(textoCompleto, tiempoLimite) {
+                const bloques = textoCompleto.split(/\n\s*\n/).map(b => b.trim()).filter(b => b !== "");
+                const preguntas = [];
+
+                bloques.forEach(bloque => {
+                    const lineas = bloque.split('\n').map(l => l.trim()).filter(l => l !== "");
+                    if (lineas.length < 3) return; // Necesita al menos pregunta + 2 opciones
+
+                    let textoPregunta = null;
+                    const opciones = [];
+                    let respuestaCorrecta = null;
+
+                    lineas.forEach(linea => {
+                        const matchOpcion = linea.match(/^([A-Da-d])\)\s*(.+)$/);
+                        const matchRespuesta = linea.match(/^(Correcta|Respuesta)\s*:\s*([A-Da-d])/i);
+
+                        if (matchRespuesta) {
+                            respuestaCorrecta = matchRespuesta[2].toUpperCase();
+                        } else if (matchOpcion) {
+                            opciones.push({ letra: matchOpcion[1].toUpperCase(), texto: matchOpcion[2].trim() });
+                        } else if (textoPregunta === null) {
+                            // [AM] Quitamos numeración tipo "1. " o "12." al inicio de la pregunta
+                            textoPregunta = linea.replace(/^\d+\.\s*/, '').trim();
+                        }
+                    });
+
+                    if (textoPregunta && opciones.length >= 2 && respuestaCorrecta) {
+                        preguntas.push({
+                            texto: textoPregunta,
+                            opciones: opciones,
+                            respuesta: respuestaCorrecta,
+                            tiempoLimite: tiempoLimite
                         });
                     }
                 });
 
-                if (preguntasParseadas.length === 0) {
-                    alert("No se pudo leer ninguna pregunta válida. Revisa el formato: pregunta | respuesta | tiempo");
-                    return;
-                }
+                return preguntas;
+            }
 
-                socket.emit('admin_agregar_preguntas_bulk', preguntasParseadas);
-                txtPreguntasBulk.value = "";
+            // [AM] Agregar varias preguntas de opción múltiple pegadas en bloque
+            if (btnAgregarOM) {
+                btnAgregarOM.addEventListener('click', () => {
+                    const texto = txtPreguntasOM.value.trim();
+                    const tiempoLimite = Number(txtTiempoOM.value) || 8;
 
-                if (lblBulkEstado) {
-                    lblBulkEstado.textContent = `✅ ${preguntasParseadas.length} preguntas agregadas.`;
-                    lblBulkEstado.style.color = "#2ea44f";
-                }
-            });
-        }
+                    if (texto === "") {
+                        alert("Pega al menos un bloque de pregunta con sus opciones.");
+                        return;
+                    }
 
-        // [AM] Parsea bloques tipo:
-        // 1. ¿Pregunta?
-        // A) opcion
-        // B) opcion
-        // C) opcion
-        // D) opcion
-        // Correcta: B
-        function parsearPreguntasOpcionMultiple(textoCompleto, tiempoLimite) {
-            const bloques = textoCompleto.split(/\n\s*\n/).map(b => b.trim()).filter(b => b !== "");
-            const preguntas = [];
+                    const preguntasParseadas = parsearPreguntasOpcionMultiple(texto, tiempoLimite);
 
-            bloques.forEach(bloque => {
-                const lineas = bloque.split('\n').map(l => l.trim()).filter(l => l !== "");
-                if (lineas.length < 3) return; // Necesita al menos pregunta + 2 opciones
+                    if (preguntasParseadas.length === 0) {
+                        alert("No se pudo leer ninguna pregunta válida. Revisa que cada bloque tenga la pregunta, al menos 2 opciones (A), B)...) y una línea 'Correcta: X'.");
+                        return;
+                    }
 
-                let textoPregunta = null;
-                const opciones = [];
-                let respuestaCorrecta = null;
+                    socket.emit('admin_agregar_preguntas_bulk', preguntasParseadas);
+                    txtPreguntasOM.value = "";
 
-                lineas.forEach(linea => {
-                    const matchOpcion = linea.match(/^([A-Da-d])\)\s*(.+)$/);
-                    const matchRespuesta = linea.match(/^(Correcta|Respuesta)\s*:\s*([A-Da-d])/i);
-
-                    if (matchRespuesta) {
-                        respuestaCorrecta = matchRespuesta[2].toUpperCase();
-                    } else if (matchOpcion) {
-                        opciones.push({ letra: matchOpcion[1].toUpperCase(), texto: matchOpcion[2].trim() });
-                    } else if (textoPregunta === null) {
-                        // [AM] Quitamos numeración tipo "1. " o "12." al inicio de la pregunta
-                        textoPregunta = linea.replace(/^\d+\.\s*/, '').trim();
+                    if (lblOMEstado) {
+                        lblOMEstado.textContent = `✅ ${preguntasParseadas.length} preguntas de opción múltiple agregadas.`;
+                        lblOMEstado.style.color = "#2ea44f";
                     }
                 });
+            }
 
-                if (textoPregunta && opciones.length >= 2 && respuestaCorrecta) {
-                    preguntas.push({
-                        texto: textoPregunta,
-                        opciones: opciones,
-                        respuesta: respuestaCorrecta,
-                        tiempoLimite: tiempoLimite
-                    });
-                }
-            });
-
-            return preguntas;
-        }
-
-        // [AM] Agregar varias preguntas de opción múltiple pegadas en bloque
-        if (btnAgregarOM) {
-            btnAgregarOM.addEventListener('click', () => {
-                const texto = txtPreguntasOM.value.trim();
-                const tiempoLimite = Number(txtTiempoOM.value) || 8;
-
-                if (texto === "") {
-                    alert("Pega al menos un bloque de pregunta con sus opciones.");
-                    return;
-                }
-
-                const preguntasParseadas = parsearPreguntasOpcionMultiple(texto, tiempoLimite);
-
-                if (preguntasParseadas.length === 0) {
-                    alert("No se pudo leer ninguna pregunta válida. Revisa que cada bloque tenga la pregunta, al menos 2 opciones (A), B)...) y una línea 'Correcta: X'.");
-                    return;
-                }
-
-                socket.emit('admin_agregar_preguntas_bulk', preguntasParseadas);
-                txtPreguntasOM.value = "";
-
-                if (lblOMEstado) {
-                    lblOMEstado.textContent = `✅ ${preguntasParseadas.length} preguntas de opción múltiple agregadas.`;
-                    lblOMEstado.style.color = "#2ea44f";
-                }
-            });
-        }
-
-        // [AM] Vaciar toda la lista
-        if (btnVaciarPreguntas) {
-            btnVaciarPreguntas.addEventListener('click', () => {
-                if (confirm("¿Seguro que quieres borrar TODAS las preguntas cargadas?")) {
-                    socket.emit('admin_vaciar_preguntas');
-                }
-            });
-        }
-
-        // [AM] Repinta la lista de preguntas cargadas cada vez que el server la actualiza
-        socket.on('lista_preguntas_actualizada', (preguntas) => {
-            if (!listaPreguntasAdmin) return;
-            listaPreguntasAdmin.innerHTML = '';
-            contadorPreguntas.textContent = preguntas.length;
-
-            preguntas.forEach((p, indice) => {
-                const li = document.createElement('li');
-                li.style.cssText = "display:flex; justify-content:space-between; align-items:flex-start; background:#0d1117; border:1px solid #30363d; border-radius:5px; padding:8px 10px; margin-bottom:6px; gap:10px;";
-
-                // [AM] Si tiene opciones, mostramos un resumen con las 4 alternativas
-                let detalle = `<strong>${p.texto}</strong>`;
-                if (Array.isArray(p.opciones) && p.opciones.length > 0) {
-                    const opcionesTexto = p.opciones.map(o => `${o.letra}) ${o.texto}`).join(' &nbsp;|&nbsp; ');
-                    detalle += `<br><span style="color:#8b949e;">${opcionesTexto}</span><br><span style="color:#2ea44f;">✔ Correcta: ${p.respuesta}</span>`;
-                } else {
-                    detalle += ` → ${p.respuesta}`;
-                }
-                detalle += ` <span style="color:#ffb703;">(${p.tiempoLimite}s)</span>`;
-
-                const spanDetalle = document.createElement('span');
-                spanDetalle.style.fontSize = "14px";
-                spanDetalle.innerHTML = detalle;
-
-                const btnBorrar = document.createElement('button');
-                btnBorrar.textContent = "Borrar";
-                btnBorrar.style.cssText = "background-color:#da3633; padding:5px 10px; font-size:12px; flex-shrink:0;";
-                btnBorrar.addEventListener('click', () => {
-                    socket.emit('admin_eliminar_pregunta', indice);
+            // [AM] Vaciar toda la lista
+            if (btnVaciarPreguntas) {
+                btnVaciarPreguntas.addEventListener('click', () => {
+                    if (confirm("¿Seguro que quieres borrar TODAS las preguntas cargadas?")) {
+                        socket.emit('admin_vaciar_preguntas');
+                    }
                 });
+            }
 
-                li.appendChild(spanDetalle);
-                li.appendChild(btnBorrar);
-                listaPreguntasAdmin.appendChild(li);
+            // [AM] Repinta la lista de preguntas cargadas cada vez que el server la actualiza
+            socket.on('lista_preguntas_actualizada', (preguntas) => {
+                if (!listaPreguntasAdmin) return;
+                listaPreguntasAdmin.innerHTML = '';
+                contadorPreguntas.textContent = preguntas.length;
+
+                preguntas.forEach((p, indice) => {
+                    const li = document.createElement('li');
+                    li.style.cssText = "display:flex; justify-content:space-between; align-items:flex-start; background:#0d1117; border:1px solid #30363d; border-radius:5px; padding:8px 10px; margin-bottom:6px; gap:10px;";
+
+                    // [AM] Si tiene opciones, mostramos un resumen con las 4 alternativas
+                    let detalle = `<strong>${p.texto}</strong>`;
+                    if (Array.isArray(p.opciones) && p.opciones.length > 0) {
+                        const opcionesTexto = p.opciones.map(o => `${o.letra}) ${o.texto}`).join(' &nbsp;|&nbsp; ');
+                        detalle += `<br><span style="color:#8b949e;">${opcionesTexto}</span><br><span style="color:#2ea44f;">✔ Correcta: ${p.respuesta}</span>`;
+                    } else {
+                        detalle += ` → ${p.respuesta}`;
+                    }
+                    detalle += ` <span style="color:#ffb703;">(${p.tiempoLimite}s)</span>`;
+
+                    const spanDetalle = document.createElement('span');
+                    spanDetalle.style.fontSize = "14px";
+                    spanDetalle.innerHTML = detalle;
+
+                    const btnBorrar = document.createElement('button');
+                    btnBorrar.textContent = "Borrar";
+                    btnBorrar.style.cssText = "background-color:#da3633; padding:5px 10px; font-size:12px; flex-shrink:0;";
+                    btnBorrar.addEventListener('click', () => {
+                        socket.emit('admin_eliminar_pregunta', indice);
+                    });
+
+                    li.appendChild(spanDetalle);
+                    li.appendChild(btnBorrar);
+                    listaPreguntasAdmin.appendChild(li);
+                });
             });
-        });
 
-        socket.on('actualizar_ranking', (ranking) => {
-            cuerpoTabla.innerHTML = '';
-            ranking.forEach((jugador, index) => {
-                const fila = document.createElement('tr');
-                fila.innerHTML = `
+            socket.on('actualizar_ranking', (ranking) => {
+                cuerpoTabla.innerHTML = '';
+                ranking.forEach((jugador, index) => {
+                    const fila = document.createElement('tr');
+                    fila.innerHTML = `
                     <td>#${index + 1}</td>
                     <td><strong>${jugador.username}</strong></td>
                     <td>${jugador.puntos} pts</td>
                     <td>${jugador.vivo ? '🐍 Jugando' : '💀 Game Over'}</td>
                 `;
-                cuerpoTabla.appendChild(fila);
+                    cuerpoTabla.appendChild(fila);
+                });
             });
         });
-    });
-</script>
+    </script>
 </body>
+
 </html>

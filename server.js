@@ -132,12 +132,19 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('admin_iniciar_torneo', () => {
+    socket.on('admin_iniciar_torneo', (datos) => {
+
+        const tiempoMinutos = Number(datos?.tiempoMinutos) || 5;
+
         for (let id in jugadores) {
             jugadores[id].puntos = 0;
             jugadores[id].vivo = true;
         }
-        io.emit('start_juego');
+
+        io.emit('start_juego', {
+            tiempoMinutos: tiempoMinutos
+        });
+
         enviarRankingActualizado();
     });
 
