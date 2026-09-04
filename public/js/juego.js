@@ -69,7 +69,14 @@ let toqueIniciY = 0;
 
 window.iniciarJuegoCulebrita = function () {
 
-    mostrarAvisoInicio();
+    
+    alert(
+        "🐍 ¡El torneo esta por comenzar!\n\n" +
+        "Prepárate para jugar.\n" +
+        "Come las manzanas y responde correctamente las preguntas.\n\n" +
+        "⚠️ Si respondes incorrectamente, tendras una penalizacion de 3 segundos.\n\n" +
+        "¡Mucha suerte!"
+    );
 
     if (!canvas) return;
 
@@ -508,16 +515,6 @@ function dibujarTodo() {
         ctx.fillStyle = (indice === 0) ? '#58ff6d' : '#2ea44f';
         ctx.fillRect(bloque.x * TAMANO_BLOQUE, bloque.y * TAMANO_BLOQUE, TAMANO_BLOQUE - 2, TAMANO_BLOQUE - 2);
     });
-}
-
-function mostrarAvisoInicio() {
-    alert(
-        "🐍 ¡El torneo esta por comenzar!\n\n" +
-        "Prepárate para jugar.\n" +
-        "Come las manzanas y responde correctamente las preguntas.\n\n" +
-        "⚠️ Si respondes incorrectamente, tendras una penalizacion de 3 segundos.\n\n" +
-        "¡Mucha suerte!"
-    );
 }
 
 function terminarJuego() {
